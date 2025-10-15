@@ -1,6 +1,9 @@
 import express from "express";
 import cors from "cors";
 import requestLogger from "./middlewares/requestLogger.js";
+import { errorResponse, successResponse } from "./utils/responseFormatter.js";
+import { ERROR_CODES } from "./constants/errors.js";
+import { HTTP_STATUS } from "./constants/http.js";
 
 const app = express();
 
@@ -16,15 +19,18 @@ app.use(requestLogger);
 
 // ====== Health Check Route ======
 app.use("/api/v1/health", (req, res) => {
-   res.status(200).json({
-      status: "healthy",
-      server: process.env.SERVER_NAME,
+   successResponse(res, {
+      message: "healthy",
    });
 });
 
 // ====== 404 Fallback ======
 app.use((req, res) => {
-   res.status(404).json({ error: "Not Found" });
+   errorResponse(res, {
+      error: ERROR_CODES.NOT_FOUND,
+      message: "Route Not Found",
+      statusCode: HTTP_STATUS.NOT_FOUND,
+   });
 });
 
 // Export the configured Express application instance.
