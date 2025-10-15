@@ -1,9 +1,7 @@
 // middlewares/requestLogger.js
 import morgan from "morgan";
 import chalk from "chalk";
-import { createLogger } from "../utils/logger.js";
-
-const logger = createLogger("request-logger");
+import { logger } from "../utils/logger.js";
 
 // Custom token for IP
 morgan.token("ip", (req) => {
@@ -53,10 +51,8 @@ const prodFormat = (tokens, req, res) => {
 const format = process.env.NODE_ENV === "production" ? prodFormat : devFormat;
 
 // Create Morgan middleware
-const requestLogger = morgan(format, {
+export const requestLogger = morgan(format, {
    stream: {
       write: (message) => logger.info(message.trim()),
    },
 });
-
-export default requestLogger;
