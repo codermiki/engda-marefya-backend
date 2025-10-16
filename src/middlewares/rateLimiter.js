@@ -1,8 +1,7 @@
 import rateLimit from "express-rate-limit";
-import { logger } from "../utils/logger.js";
-import { errorResponse } from "../utils/responseFormatter.js";
 import { HTTP_STATUS } from "../constants/http.js";
-import { ERROR_CODES } from "../constants/errors.js";
+import { logger } from "../utils/logger.js";
+import ApiError from "../utils/ApiError.js";
 
 /**
  * Create a configurable, reusable rate limiter instance
@@ -30,11 +29,7 @@ export const rateLimiter = ({
                req.path
             }, Method: ${req.method}, User-Agent: ${req.get("User-Agent")}`
          );
-         errorResponse(res, {
-            error: ERROR_CODES.TOO_MANY_REQUESTS,
-            message,
-            statusCode: HTTP_STATUS.TOO_MANY_REQUESTS,
-         });
+         throw new ApiError(message, HTTP_STATUS.TOO_MANY_REQUESTS);
       },
    });
 };

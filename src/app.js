@@ -2,8 +2,9 @@ import express from "express";
 import cors from "cors";
 import { requestLogger } from "./middlewares/requestLogger.js";
 import { rateLimiter } from "./middlewares/rateLimiter.js";
-import { errorResponse, successResponse } from "./utils/responseFormatter.js";
-import { ERROR_CODES } from "./constants/errors.js";
+import errorHandler from "./middlewares/errorHandler.js";
+import { successResponse } from "./utils/responseFormatter.js";
+import ApiError from "./utils/ApiError.js";
 import { HTTP_STATUS } from "./constants/http.js";
 
 const app = express();
@@ -26,11 +27,24 @@ app.use("/api/v1/health", (req, res) => {
 
 // ====== 404 Fallback ======
 app.use((req, res) => {
-   errorResponse(res, {
-      error: ERROR_CODES.NOT_FOUND,
-      message: "Route Not Found",
-      statusCode: HTTP_STATUS.NOT_FOUND,
-   });
+   throw new ApiError("Route Not Found", HTTP_STATUS.NOT_FOUND);
+});
+
+// Global error handler (must be last)
+app.use(errorHandler);
+
+// Handle uncaught exceptions (sync code)
+process.on("uncaughtException", (err) => {
+   logger.error("UNCAUGHT EXCEPTION 💥 Shutting down...");
+   logger.error(err);
+   process.exit(1); // crash to restart in stable state
+});
+
+// Handle unhandled promise rejections (async code)
+process.on("unhandledRejection", (err) => {
+   logger.error("UNHANDLED REJECTION 💥 Shutting down...");
+   logger.error(err);
+   process.exit(1); // crash to restart in stable state
 });
 
 // Export the configured Express application instance.

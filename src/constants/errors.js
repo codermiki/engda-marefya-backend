@@ -4,33 +4,25 @@
  *
  */
 
-// Error codes
-export const ERROR_CODES = {
-   // General errors
-   INTERNAL_SERVER_ERROR: "INTERNAL_SERVER_ERROR",
-   UNKNOWN_ERROR: "UNKNOWN_ERROR",
-   VALIDATION_ERROR: "VALIDATION_ERROR",
-   BAD_REQUEST: "BAD_REQUEST",
-   TOO_MANY_REQUESTS: "TOO_MANY_REQUESTS",
+export const ERROR_TEMPLATES = {
+   400: { error: "Bad Request", message: "Provided parameter is invalid." },
+   401: {
+      error: "Unauthorized",
+      message: "You are not signed in. Please sign in.",
+   },
+   403: { error: "Forbidden", message: "You do not have permission." },
+   404: {
+      error: "Not Found",
+      message: "The requested resource was not found.",
+   },
+   409: { error: "Conflict", message: "Resource already exists." },
+   429: {
+      error: "Too Many Requests",
+      message: "Too many requests in a short period. Please try again later.",
+   },
 
-   // Authentication / Authorization
-   UNAUTHORIZED: "UNAUTHORIZED",
-   FORBIDDEN: "FORBIDDEN",
-   TOKEN_EXPIRED: "TOKEN_EXPIRED",
-   INVALID_TOKEN: "INVALID_TOKEN",
-
-   // Resource-related
-   NOT_FOUND: "NOT_FOUND",
-   RESOURCE_CONFLICT: "RESOURCE_CONFLICT",
-   DUPLICATE_ENTRY: "DUPLICATE_ENTRY",
-
-   // User-specific
-   USER_NOT_FOUND: "USER_NOT_FOUND",
-   USER_ALREADY_EXISTS: "USER_ALREADY_EXISTS",
-   INVALID_CREDENTIALS: "INVALID_CREDENTIALS",
-
-   // Database / Server
-   DATABASE_ERROR: "DATABASE_ERROR",
-   CONNECTION_FAILED: "CONNECTION_FAILED",
-   TIMEOUT_ERROR: "TIMEOUT_ERROR",
+   500: {
+      error: "Internal Server Error",
+      message: "An unexpected error occurred.",
+   },
 };
