@@ -20,7 +20,6 @@ export const ERROR_TEMPLATES = {
       error: "Too Many Requests",
       message: "Too many requests in a short period. Please try again later.",
    },
-
    500: {
       error: "Internal Server Error",
       message: "An unexpected error occurred.",

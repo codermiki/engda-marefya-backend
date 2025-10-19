@@ -11,8 +11,15 @@ export const HOTEL_STATUS = {
    REJECTED: "rejected",
 };
 
+// Room Type status
+export const ROOM_TYPE_STATUS = {
+   ACTIVE: "active",
+   INACTIVE: "inactive",
+};
+
 // Room status
 export const ROOM_STATUS = {
    AVAILABLE: "available",
+   BOOKED: "booked",
    MAINTENANCE: "maintenance",
 };

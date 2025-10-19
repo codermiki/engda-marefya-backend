@@ -13,9 +13,10 @@ export const BOOKING_STATUS = {
 
 // Payment status
 export const PAYMENT_STATUS = {
-   INITIATED: "initiated",
+   INITIATED: "pending",
    COMPLETED: "completed",
    FAILED: "failed",
+   REFUNDED: "refunded",
 };
 
 // Payment method
