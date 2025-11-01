@@ -4,8 +4,8 @@ import { requestLogger } from "./middlewares/requestLogger.js";
 import { rateLimiter } from "./middlewares/rateLimiter.js";
 import errorHandler from "./middlewares/errorHandler.js";
 import { successResponse } from "./utils/responseFormatter.js";
-import ApiError from "./utils/ApiError.js";
 import { HTTP_STATUS } from "./constants/http.js";
+import AppError from "./utils/AppError.js";
 
 const app = express();
 
@@ -27,7 +27,7 @@ app.use("/api/v1/health", (req, res) => {
 
 // ====== 404 Fallback ======
 app.use((req, res) => {
-   throw new ApiError("Route Not Found", HTTP_STATUS.NOT_FOUND);
+   throw new AppError("Route Not Found", HTTP_STATUS.NOT_FOUND);
 });
 
 // Global error handler (must be last)

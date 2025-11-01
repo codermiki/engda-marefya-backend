@@ -1,7 +1,7 @@
 import rateLimit from "express-rate-limit";
 import { HTTP_STATUS } from "../constants/http.js";
 import { logger } from "../utils/logger.js";
-import ApiError from "../utils/ApiError.js";
+import ApiError from "../utils/AppError.js";
 
 /**
  * Create a configurable, reusable rate limiter instance
