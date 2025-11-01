@@ -6,6 +6,7 @@ import errorHandler from "./middlewares/errorHandler.js";
 import { successResponse } from "./utils/responseFormatter.js";
 import { HTTP_STATUS } from "./constants/http.js";
 import AppError from "./utils/AppError.js";
+import authRoutes from "./modules/auth/routes/index.js";
 
 const app = express();
 
@@ -24,6 +25,9 @@ app.use("/api/v1/health", (req, res) => {
       message: "healthy",
    });
 });
+
+// ====== Api Routes ======
+app.use("/api/v1/auth", authRoutes);
 
 // ====== 404 Fallback ======
 app.use((req, res) => {
