@@ -3,7 +3,11 @@ import {
    registerValidation,
    handleValidationErrors,
 } from "../../../middlewares/validation.js";
-import { registerCustomer, registerHotelOwner } from "../controller/index.js";
+import {
+   registerCustomer,
+   registerHotelOwner,
+   verifyEmail,
+} from "../controller/index.js";
 
 const router = Router();
 
@@ -22,5 +26,8 @@ router.post(
    handleValidationErrors,
    registerHotelOwner
 );
+
+// Verify Email
+router.get("/verify-email", verifyEmail);
 
 export default router;

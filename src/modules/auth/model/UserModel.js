@@ -87,6 +87,80 @@ class UserModel {
          );
       }
    }
+
+   // Find user by ID
+   static async findById(id) {
+      const query = "SELECT * FROM users WHERE id = ?";
+
+      try {
+         const [rows] = await pool.execute(query, [id]);
+         return rows[0] || null;
+      } catch (error) {
+         throw new AppError(
+            "Internal server error",
+            HTTP_STATUS.INTERNAL_SERVER_ERROR
+         );
+      }
+   }
+
+   // Update user
+   static async update(id, updateData) {
+      const allowedFields = [
+         "user_name",
+         "phone_number",
+         "profile_pic_url",
+         "password_hash",
+         "is_email_verified",
+         "status",
+         "role",
+      ];
+
+      const setClause = [];
+      const values = [];
+
+      allowedFields.forEach((field) => {
+         if (updateData[field] !== undefined) {
+            setClause.push(`${field} = ?`);
+            values.push(updateData[field]);
+         }
+      });
+
+      if (setClause.length === 0) {
+         throw new AppError(
+            "No valid fields to update",
+            HTTP_STATUS.BAD_REQUEST
+         );
+      }
+
+      setClause.push("updated_at = CURRENT_TIMESTAMP");
+      values.push(id);
+
+      const query = `UPDATE users SET ${setClause.join(", ")} WHERE id = ?`;
+
+      try {
+         const [result] = await pool.execute(query, values);
+
+         if (result.affectedRows === 0) {
+            throw new AppError("User not found", HTTP_STATUS.NOT_FOUND);
+         }
+
+         // Return updated user
+         return await this.findById(id);
+      } catch (error) {
+         if (error.code === "ER_DUP_ENTRY") {
+            if (error.message.includes("phone_number")) {
+               throw new AppError(
+                  "Phone number already exists",
+                  HTTP_STATUS.BAD_REQUEST
+               );
+            }
+         }
+         throw new AppError(
+            "Internal server error",
+            HTTP_STATUS.INTERNAL_SERVER_ERROR
+         );
+      }
+   }
 }
 
 export default UserModel;
