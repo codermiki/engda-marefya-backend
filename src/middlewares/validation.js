@@ -2,16 +2,17 @@ import { body, validationResult } from "express-validator";
 import { HTTP_STATUS } from "../constants/http.js";
 import { errorResponse } from "../utils/responseFormatter.js";
 import { ERROR_TEMPLATES } from "../constants/errors.js";
+import AppError from "../utils/AppError.js";
 
 export const handleValidationErrors = (req, res, next) => {
    const errors = validationResult(req);
    if (!errors.isEmpty()) {
-      errorResponse(res, {
-         error: ERROR_TEMPLATES[400].error,
-         message: ERROR_TEMPLATES[400].message,
-         statusCode: HTTP_STATUS.BAD_REQUEST,
-         details: errors,
-      });
+      throw new AppError(
+         ERROR_TEMPLATES[400].message,
+         HTTP_STATUS.BAD_REQUEST,
+         true,
+         errors.array()
+      );
    }
    next();
 };

@@ -6,6 +6,7 @@ const errorHandler = (err, req, res, next) => {
    // If no status code, default to 500
    const statusCode = err.statusCode || 500;
    const isOperational = err.isOperational ?? false;
+   const details = err.details;
 
    // Get standard template based on statusCode
    const template = ERROR_TEMPLATES[statusCode] || ERROR_TEMPLATES[500];
@@ -31,6 +32,7 @@ const errorHandler = (err, req, res, next) => {
       error: errorType,
       message,
       statusCode,
+      details,
    });
 };
 
