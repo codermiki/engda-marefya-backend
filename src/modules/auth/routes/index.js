@@ -3,7 +3,7 @@ import {
    registerValidation,
    handleValidationErrors,
 } from "../../../middlewares/validation.js";
-import { registerCustomer } from "../controller/index.js";
+import { registerCustomer, registerHotelOwner } from "../controller/index.js";
 
 const router = Router();
 
@@ -13,6 +13,14 @@ router.post(
    registerValidation,
    handleValidationErrors,
    registerCustomer
+);
+
+// Register Hotel Owner
+router.post(
+   "/register/hotel-owner",
+   registerValidation,
+   handleValidationErrors,
+   registerHotelOwner
 );
 
 export default router;
