@@ -2,6 +2,7 @@ import { Router } from "express";
 import {
    registerValidation,
    loginValidation,
+   resetPassValidation,
    handleValidationErrors,
 } from "../../../middlewares/validation.js";
 import {
@@ -9,6 +10,8 @@ import {
    registerHotelOwner,
    verifyEmail,
    loginUser,
+   forgotPassword,
+   resetPassword,
 } from "../controller/index.js";
 
 const router = Router();
@@ -34,5 +37,16 @@ router.get("/verify-email", verifyEmail);
 
 // Login user route
 router.post("/login", loginValidation, handleValidationErrors, loginUser);
+
+// Forgot Password route
+router.post("/forgot-password", forgotPassword);
+
+// Reset Password route
+router.post(
+   "/reset-password",
+   resetPassValidation,
+   handleValidationErrors,
+   resetPassword
+);
 
 export default router;

@@ -76,3 +76,51 @@ export const loginUser = async (req, res, next) => {
       next(error);
    }
 };
+
+// Forgot Password controller
+export const forgotPassword = async (req, res, next) => {
+   try {
+      const { email } = req.body;
+
+      if (!email) {
+         throw new AppError("Email is required", HTTP_STATUS.BAD_REQUEST);
+      }
+
+      await AuthService.forgotPassword(email);
+
+      return successResponse(res, {
+         message: "Password reset email sent",
+         statusCode: HTTP_STATUS.OK,
+      });
+   } catch (error) {
+      next(error);
+   }
+};
+
+// Reset Password controller
+export const resetPassword = async (req, res, next) => {
+   try {
+      const { token } = req.query;
+      const { new_password } = req.body;
+
+      if (!token) {
+         throw new AppError("Reset token is required", HTTP_STATUS.BAD_REQUEST);
+      }
+
+      if (!new_password) {
+         throw new AppError(
+            "New password is required",
+            HTTP_STATUS.BAD_REQUEST
+         );
+      }
+
+      await AuthService.resetPassword(token, new_password);
+
+      return successResponse(res, {
+         message: "Password reset successfully",
+         statusCode: HTTP_STATUS.OK,
+      });
+   } catch (error) {
+      next(error);
+   }
+};
