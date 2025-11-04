@@ -1,5 +1,5 @@
 import { HTTP_STATUS } from "../../../constants/http.js";
-import { USER_ROLES } from "../../../constants/user.js";
+import { USER_ROLES, USER_STATUS } from "../../../constants/user.js";
 import AppError from "../../../utils/AppError.js";
 import { generateId } from "../../../utils/idGenerator.js";
 import JWTUtils from "../../../utils/JWTUtils.js";
@@ -60,11 +60,16 @@ export class AuthService {
             is_email_verified: false,
          });
 
-         const token = JWTUtils.createToken({
-            userId: user.id,
-            email: user.email,
-            type: "email_verification",
-         });
+         const token = JWTUtils.createToken(
+            {
+               userId: user.id,
+               email: user.email,
+               type: "email_verification",
+            },
+            {
+               expiresIn: "24h",
+            }
+         );
 
          // sending verification email goes here
          console.log(
@@ -130,6 +135,106 @@ export class AuthService {
 
          throw new AppError(
             "Email verification failed",
+            HTTP_STATUS.INTERNAL_SERVER_ERROR
+         );
+      }
+   }
+
+   static async loginUser(email, password) {
+      try {
+         // Validate input
+         if (!email || !password) {
+            throw new AppError(
+               "Email and password are required",
+               HTTP_STATUS.BAD_REQUEST
+            );
+         }
+
+         // Find user by email
+         const user = await UserModel.findByEmail(email);
+         if (!user) {
+            throw new AppError(
+               "Invalid email or password",
+               HTTP_STATUS.UNAUTHORIZED
+            );
+         }
+
+         // Check if user is active
+         if (user.status !== USER_STATUS.ACTIVE) {
+            throw new AppError(
+               "Your account has been deactivated. Please contact support.",
+               HTTP_STATUS.FORBIDDEN
+            );
+         }
+
+         // Verify password
+         const isPasswordValid = await PasswordUtils.verifyPassword(
+            password,
+            user.password_hash
+         );
+         if (!isPasswordValid) {
+            throw new AppError(
+               "Invalid email or password",
+               HTTP_STATUS.UNAUTHORIZED
+            );
+         }
+
+         // Check if email is verified
+         if (!user.is_email_verified) {
+            const token = JWTUtils.createToken(
+               {
+                  userId: user.id,
+                  email: user.email,
+                  type: "email_verification",
+               },
+               {
+                  expiresIn: "24h",
+               }
+            );
+
+            // sending verification email goes here
+            console.log(
+               `http://localhost:9000/api/v1/auth/verify-email?token=${token}`
+            );
+
+            throw new AppError(
+               "Please check your email and verify before logging in",
+               HTTP_STATUS.FORBIDDEN
+            );
+         }
+
+         // Generate access token using JWTUtils
+         const accessToken = JWTUtils.createToken({
+            id: user.id,
+            email: user.email,
+            role: user.role,
+            type: "access",
+         });
+
+         // Prepare user data for response (exclude sensitive fields)
+         const userResponse = {
+            id: user.id,
+            user_name: user.user_name,
+            email: user.email,
+            phone_number: user.phone_number,
+            role: user.role,
+            is_email_verified: user.is_email_verified,
+            profile_pic_url: user.profile_pic_url,
+            status: user.status,
+         };
+
+         return {
+            user: userResponse,
+            access_token: accessToken,
+         };
+      } catch (error) {
+         // Re-throw AppError instances, otherwise wrap in AppError
+         if (error instanceof AppError) {
+            throw error;
+         }
+
+         throw new AppError(
+            "Login failed. Please try again.",
             HTTP_STATUS.INTERNAL_SERVER_ERROR
          );
       }

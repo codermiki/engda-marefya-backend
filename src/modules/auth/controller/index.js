@@ -59,3 +59,20 @@ export const verifyEmail = async (req, res, next) => {
       next(error);
    }
 };
+
+// Login user controller
+export const loginUser = async (req, res, next) => {
+   try {
+      const { email, password } = req.body;
+
+      const result = await AuthService.loginUser(email, password);
+
+      return successResponse(res, {
+         message: "User login successful",
+         data: result,
+         statusCode: HTTP_STATUS.OK,
+      });
+   } catch (error) {
+      next(error);
+   }
+};

@@ -1,12 +1,14 @@
 import { Router } from "express";
 import {
    registerValidation,
+   loginValidation,
    handleValidationErrors,
 } from "../../../middlewares/validation.js";
 import {
    registerCustomer,
    registerHotelOwner,
    verifyEmail,
+   loginUser,
 } from "../controller/index.js";
 
 const router = Router();
@@ -19,7 +21,7 @@ router.post(
    registerCustomer
 );
 
-// Register Hotel Owner
+// Register Hotel Owner route
 router.post(
    "/register/hotel-owner",
    registerValidation,
@@ -27,7 +29,10 @@ router.post(
    registerHotelOwner
 );
 
-// Verify Email
+// Verify Email route
 router.get("/verify-email", verifyEmail);
+
+// Login user route
+router.post("/login", loginValidation, handleValidationErrors, loginUser);
 
 export default router;
