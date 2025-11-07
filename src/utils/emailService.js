@@ -187,7 +187,7 @@ class EmailService {
             html: this.getWelcomeEmailTemplate(userName),
          };
 
-         await this.sendEmail(mailOptions, "welcome");
+         await this.sendEmail(mailOptions);
       } catch (error) {
          console.error("Failed to send welcome email:", error);
       }

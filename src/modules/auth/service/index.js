@@ -71,10 +71,7 @@ export class AuthService {
                expiresIn: "24h",
             }
          );
-         const result = await emailService.sendVerificationEmail(
-            user.email,
-            token
-         );
+         await emailService.sendVerificationEmail(user.email, token);
 
          return {
             user_id: user.id,
@@ -121,6 +118,9 @@ export class AuthService {
          await UserModel.update(decoded.userId, {
             is_email_verified: true,
          });
+
+         // Send welcome email
+         await emailService.sendWelcomeEmail(user.email, user.user_name);
 
          return {
             user_id: user.id,
@@ -193,10 +193,7 @@ export class AuthService {
             );
 
             // sending verification email goes here
-            const result = await emailService.sendVerificationEmail(
-               user.email,
-               token
-            );
+            await emailService.sendVerificationEmail(user.email, token);
 
             throw new AppError(
                "Please check your email and verify before logging in",
@@ -278,13 +275,10 @@ export class AuthService {
             );
 
             // sending verification email goes here
-            const result = await emailService.sendVerificationEmail(
-               user.email,
-               token
-            );
+            await emailService.sendVerificationEmail(user.email, token);
 
             throw new AppError(
-               "Please verify your email before resetting password",
+               "Please verify your email before resetting password. check your email to verify",
                HTTP_STATUS.FORBIDDEN
             );
          }
@@ -301,10 +295,8 @@ export class AuthService {
             }
          );
 
-         // Send password reset email goes here
-         console.log(
-            `http://localhost:9000/api/v1/auth/verify-email?token=${resetToken}`
-         );
+         // Send password reset email
+         await emailService.sendPasswordResetEmail(user.email, resetToken);
 
          return;
       } catch (error) {
@@ -351,9 +343,17 @@ export class AuthService {
          }
 
          // Check if user is active
-         if (user.status !== "active") {
+         if (user.status !== USER_STATUS.ACTIVE) {
             throw new AppError(
                "Your account has been deactivated. Please contact support.",
+               HTTP_STATUS.FORBIDDEN
+            );
+         }
+
+         // Check if user is active
+         if (!user.is_email_verified) {
+            throw new AppError(
+               "Please verify your email before resetting password. check your email to verify",
                HTTP_STATUS.FORBIDDEN
             );
          }
@@ -387,6 +387,7 @@ export class AuthService {
          });
 
          // Send password changed confirmation email goes here
+         await emailService.sendPasswordChangedEmail(user.email);
 
          return;
       } catch (error) {
