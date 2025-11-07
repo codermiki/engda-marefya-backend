@@ -1,6 +1,7 @@
 import { HTTP_STATUS } from "../../../constants/http.js";
 import { USER_ROLES, USER_STATUS } from "../../../constants/user.js";
 import AppError from "../../../utils/AppError.js";
+import emailService from "../../../utils/emailService.js";
 import { generateId } from "../../../utils/idGenerator.js";
 import JWTUtils from "../../../utils/JWTUtils.js";
 import PasswordUtils from "../../../utils/PasswordUtils.js";
@@ -70,10 +71,9 @@ export class AuthService {
                expiresIn: "24h",
             }
          );
-
-         // sending verification email goes here
-         console.log(
-            `http://localhost:9000/api/v1/auth/verify-email?token=${token}`
+         const result = await emailService.sendVerificationEmail(
+            user.email,
+            token
          );
 
          return {
@@ -193,8 +193,9 @@ export class AuthService {
             );
 
             // sending verification email goes here
-            console.log(
-               `http://localhost:9000/api/v1/auth/verify-email?token=${token}`
+            const result = await emailService.sendVerificationEmail(
+               user.email,
+               token
             );
 
             throw new AppError(
@@ -265,6 +266,23 @@ export class AuthService {
 
          // Check if email is verified
          if (!user.is_email_verified) {
+            const token = JWTUtils.createToken(
+               {
+                  userId: user.id,
+                  email: user.email,
+                  type: "email_verification",
+               },
+               {
+                  expiresIn: "24h",
+               }
+            );
+
+            // sending verification email goes here
+            const result = await emailService.sendVerificationEmail(
+               user.email,
+               token
+            );
+
             throw new AppError(
                "Please verify your email before resetting password",
                HTTP_STATUS.FORBIDDEN
