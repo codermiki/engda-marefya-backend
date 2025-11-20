@@ -103,6 +103,65 @@ class UserModel {
       }
    }
 
+   // find users with filters
+   static async findAll(filters = {}, options = {}) {
+      let query = "SELECT * FROM users";
+      const conditions = [];
+      const page = options?.page;
+      const limit = options?.limit;
+      const values = [];
+      // Apply filters
+      for (const key in filters) {
+         conditions.push(`${key} = ?`);
+         values.push(filters[key]);
+      }
+      if (conditions.length > 0) {
+         query += " WHERE " + conditions.join(" AND ");
+      }
+      // Apply pagination
+      if (page && limit) {
+         const parsedLimit = parseInt(limit, 10);
+         const parsedPage = parseInt(page - 1, 10);
+         const parsedOffset = parsedPage * parsedLimit;
+         query += ` LIMIT ${parsedLimit} OFFSET ${parsedOffset}`;
+      }
+
+      try {
+         const [rows] = await pool.execute(query, values);
+         return rows;
+      } catch (error) {
+         console.log(error);
+         throw new AppError(
+            "Internal server error",
+            HTTP_STATUS.INTERNAL_SERVER_ERROR
+         );
+      }
+   }
+
+   // Count users with filters
+   static async countAll(filters = {}) {
+      let query = "SELECT COUNT(*) as count FROM users";
+      const conditions = [];
+      const values = [];
+      // Apply filters
+      for (const key in filters) {
+         conditions.push(`${key} = ?`);
+         values.push(filters[key]);
+      }
+      if (conditions.length > 0) {
+         query += " WHERE " + conditions.join(" AND ");
+      }
+      try {
+         const [rows] = await pool.execute(query, values);
+         return rows[0].count;
+      } catch (error) {
+         throw new AppError(
+            "Internal server error",
+            HTTP_STATUS.INTERNAL_SERVER_ERROR
+         );
+      }
+   }
+
    // Update user
    static async update(id, updateData) {
       const allowedFields = [

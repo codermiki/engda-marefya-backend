@@ -8,6 +8,7 @@ import { HTTP_STATUS } from "./constants/http.js";
 import AppError from "./utils/AppError.js";
 import authRoutes from "./modules/auth/routes/index.js";
 import usersRoutes from "./modules/users/routes/index.js";
+import adminRoutes from "./modules/admin/routes/index.js";
 
 const app = express();
 
@@ -30,6 +31,7 @@ app.use("/api/v1/health", (req, res) => {
 // ====== Api Routes ======
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/users", usersRoutes);
+app.use("/api/v1/admin", adminRoutes);
 
 // ====== 404 Fallback ======
 app.use((req, res) => {
