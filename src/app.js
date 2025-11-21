@@ -9,6 +9,8 @@ import AppError from "./utils/AppError.js";
 import authRoutes from "./modules/auth/routes/index.js";
 import usersRoutes from "./modules/users/routes/index.js";
 import adminRoutes from "./modules/admin/routes/index.js";
+import hotelsRoutes from "./modules/hotels/routes/index.js";
+import {logger} from "./utils/logger.js";
 
 const app = express();
 
@@ -32,6 +34,7 @@ app.use("/api/v1/health", (req, res) => {
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/users", usersRoutes);
 app.use("/api/v1/admin", adminRoutes);
+app.use("/api/v1/hotels", hotelsRoutes);
 
 // ====== 404 Fallback ======
 app.use((req, res) => {
