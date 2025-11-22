@@ -4,6 +4,7 @@ import { generateId } from "../../../utils/idGenerator.js";
 import HotelModel from "../model/HotelModel.js";
 
 export class HotelService {
+   // Create hotel
    static async createHotel({
       owner_id,
       name,
@@ -53,6 +54,31 @@ export class HotelService {
       }
    }
 
+   // Update hotel
+   static async updateHotel(hotelId, updateData) {
+      try {
+         const updatedHotel = await HotelModel.updateHotel(hotelId, updateData);
+
+         if (!updatedHotel) {
+            throw new AppError("Hotel not found.", HTTP_STATUS.NOT_FOUND);
+         }
+
+         return {
+            hotel: updatedHotel,
+         };
+      } catch (error) {
+         if (error instanceof AppError) {
+            throw error;
+         }
+
+         throw new AppError(
+            "Failed to update hotel. Please try again.",
+            HTTP_STATUS.INTERNAL_SERVER_ERROR
+         );
+      }
+   }
+
+   // Create room type
    static async createRoomType({
       hotelId,
       name,
@@ -97,6 +123,87 @@ export class HotelService {
       }
    }
 
+   // Get room type by id
+   static async getRoomTypeById(roomTypeId) {
+      try {
+         let roomType = await HotelModel.getRoomTypeById(roomTypeId);
+         let rooms = await HotelModel.getRoomTypeRooms(roomTypeId);
+         let amenities = await HotelModel.getRoomTypeAmenities(roomTypeId);
+         let images = await HotelModel.getRoomTypeImages(roomTypeId);
+
+         // Check if room type exists
+         if (!roomType) {
+            roomType = [];
+         }
+
+         // Check if rooms exist
+         if (!rooms) {
+            rooms = [];
+         }
+
+         // Check if amenities exist
+         if (!amenities) {
+            amenities = [];
+         }
+
+         // Check if images exist
+         if (!images) {
+            images = [];
+         }
+
+         return {
+            id: roomType.id,
+            name: roomType.name,
+            description: roomType.description,
+            price_per_night: roomType.price_per_night,
+            main_image_url: roomType.main_image_url,
+            status: roomType.status,
+            hotel: {
+               id: roomType.hotel_id,
+               name: roomType.hotel_name,
+               location: roomType.hotel_location,
+               contact_info: roomType.contact_info,
+               description: roomType.hotel_description,
+               profile_pic_url: roomType.profile_pic_url,
+            },
+            images: images
+               ? images.map((image) => ({
+                    id: image.id,
+                    image_url: image.image_url,
+                    alt_text: image.alt_text,
+                 }))
+               : [],
+            amenities: amenities
+               ? amenities.map((amenity) => ({
+                    id: amenity.id,
+                    name: amenity.name,
+                    icon_url: amenity.icon_url,
+                 }))
+               : [],
+            rooms: rooms
+               ? rooms.map((room) => ({
+                    id: room.id,
+                    room_number: room.room_number,
+                    status: room.status,
+                 }))
+               : [],
+            available_rooms_count: rooms.length,
+            created_at: roomType.created_at,
+            updated_at: roomType.updated_at,
+         };
+      } catch (error) {
+         if (error instanceof AppError) {
+            throw error;
+         }
+
+         throw new AppError(
+            "Failed to retrieve room type. Please try again.",
+            HTTP_STATUS.INTERNAL_SERVER_ERROR
+         );
+      }
+   }
+
+   // Create amenity
    static async createAmenity({ name, icon_url }) {
       try {
          // Generate Object Id
@@ -128,6 +235,20 @@ export class HotelService {
       }
    }
 
+   // Get amenities
+   static async getAmenities() {
+      try {
+         const amenities = await HotelModel.getAmenities();
+         return amenities;
+      } catch (error) {
+         throw new AppError(
+            "Failed to get amenities. Please try again.",
+            HTTP_STATUS.INTERNAL_SERVER_ERROR
+         );
+      }
+   }
+
+   // Add room type amenities
    static async addRoomTypeAmenities({ roomTypeId, amenity_ids }) {
       try {
          let amenities = [];
@@ -155,6 +276,109 @@ export class HotelService {
 
          throw new AppError(
             "Failed to add room type amenities. Please try again.",
+            HTTP_STATUS.INTERNAL_SERVER_ERROR
+         );
+      }
+   }
+
+   // Add room type rooms
+   static async addRoomTypeRooms({ roomTypeId, room_numbers }) {
+      try {
+         let rooms = [];
+         if (room_numbers.length) {
+            const promises = room_numbers.map(async (room_number) => {
+               // Generate Object Id
+               const id = generateId();
+               const newRoom = await HotelModel.addRoomTypeRoom({
+                  id,
+                  room_type_id: roomTypeId,
+                  room_number,
+               });
+               return newRoom.id;
+            });
+
+            rooms = await Promise.all(promises);
+         }
+
+         return { rooms };
+      } catch (error) {
+         // Re-throw AppError instances, otherwise wrap in AppError
+         if (error instanceof AppError) {
+            throw error;
+         }
+
+         throw new AppError(
+            "Failed to add room type rooms. Please try again.",
+            HTTP_STATUS.INTERNAL_SERVER_ERROR
+         );
+      }
+   }
+
+   // Get hotel by id
+   static async getHotelById(hotelId) {
+      try {
+         const hotel = await HotelModel.getHotelById(hotelId);
+
+         if (!hotel) {
+            throw new AppError("Hotel not found.", HTTP_STATUS.NOT_FOUND);
+         }
+
+         let roomTypesData = await HotelModel.getHotelRoomTypes(hotelId);
+
+         if (!roomTypesData) {
+            roomTypesData = [];
+         }
+
+         const roomTypesWithDetails = await Promise.all(
+            roomTypesData.map(async (roomType) => {
+               let amenities = await HotelModel.getRoomTypeAmenities(
+                  roomType.id
+               );
+               let rooms = await HotelModel.getRoomTypeRooms(roomType.id);
+
+               if (!amenities) {
+                  amenities = [];
+               }
+
+               if (!rooms) {
+                  rooms = [];
+               }
+
+               return {
+                  id: roomType.id,
+                  name: roomType.name,
+                  description: roomType.description,
+                  price_per_night: roomType.price_per_night,
+                  main_image_url: roomType.main_image_url,
+                  status: roomType.status,
+                  amenities: amenities.map((a) => a.name),
+                  available_rooms: rooms.length,
+               };
+            })
+         );
+
+         return {
+            id: hotel.id,
+            name: hotel.name,
+            location: hotel.location,
+            contact_info: hotel.contact_info,
+            description: hotel.description,
+            business_license: hotel.business_license,
+            profile_pic_url: hotel.profile_pic_url,
+            status: hotel.status,
+            owner_id: hotel.owner_id,
+            room_types: roomTypesWithDetails,
+            created_at: hotel.created_at,
+            updated_at: hotel.updated_at,
+         };
+      } catch (error) {
+         console.log(error);
+         if (error instanceof AppError) {
+            throw error;
+         }
+
+         throw new AppError(
+            "Failed to retrieve hotel details. Please try again.",
             HTTP_STATUS.INTERNAL_SERVER_ERROR
          );
       }
