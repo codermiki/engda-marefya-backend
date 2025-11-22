@@ -121,6 +121,28 @@ export const getRoomTypesById = async (req, res, next) => {
    }
 };
 
+// update room type
+export const updateRoomType = async (req, res, next) => {
+   try {
+      const { roomTypeId } = req.params;
+      const updateData = req.body;
+
+      if (Object.keys(updateData).length === 0) {
+         throw new AppError("No update data provided", HTTP_STATUS.BAD_REQUEST);
+      }
+
+      const data = await HotelService.updateRoomType(roomTypeId, updateData);
+
+      return successResponse(res, {
+         message: "Room type updated successfully",
+         data,
+         statusCode: HTTP_STATUS.OK,
+      });
+   } catch (error) {
+      next(error);
+   }
+};
+
 // Create a new Amenities
 export const createAmenity = async (req, res, next) => {
    try {
@@ -211,6 +233,35 @@ export const addRoomTypeRooms = async (req, res, next) => {
 
       return successResponse(res, {
          message: "Rooms added successfully",
+         data,
+         statusCode: HTTP_STATUS.CREATED,
+      });
+   } catch (error) {
+      next(error);
+   }
+};
+
+// Add room type images
+export const addRoomTypeImages = async (req, res, next) => {
+   try {
+      const { roomTypeId } = req.params;
+      const { images } = req.body;
+
+      // Basic validation
+      if (!images.length) {
+         throw new AppError(
+            "Select at least one image",
+            HTTP_STATUS.BAD_REQUEST
+         );
+      }
+      // Call service to create room type
+      const data = await HotelService.addRoomTypeImages({
+         roomTypeId,
+         images,
+      });
+
+      return successResponse(res, {
+         message: "Images added successfully",
          data,
          statusCode: HTTP_STATUS.CREATED,
       });

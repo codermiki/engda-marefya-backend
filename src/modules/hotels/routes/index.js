@@ -6,9 +6,11 @@ import {
    addRoomTypeAmenities,
    createAmenity,
    addRoomTypeRooms,
+   addRoomTypeImages,
    getHotelById,
    getAmenities,
    getRoomTypesById,
+   updateRoomType,
 } from "../controller/index.js";
 
 const router = Router();
@@ -21,6 +23,8 @@ router.put("/:hotelId", updateHotel);
 router.post("/:hotelId/room-types", createRoomType);
 // get room types details
 router.get("/room-types/:roomTypeId", getRoomTypesById);
+// update room type
+router.put("/room-types/:roomTypeId", updateRoomType);
 // Create a new amenity
 router.post("/amenities", createAmenity);
 // get amenities
@@ -29,6 +33,8 @@ router.get("/amenities", getAmenities);
 router.post("/room-types/:roomTypeId/add-amenities", addRoomTypeAmenities);
 // Add rooms for a room type
 router.post("/room-types/:roomTypeId/rooms", addRoomTypeRooms);
+// Add room type images
+router.post("/room-types/:roomTypeId/images", addRoomTypeImages);
 // Get hotel by id
 router.get("/:hotelId", getHotelById);
 

@@ -185,6 +185,68 @@ class HotelModel {
       }
    }
 
+   // update room type
+   static async updateRoomType(id, updateData) {
+      const allowedFields = [
+         "name",
+         "description",
+         "price_per_night",
+         "main_image_url",
+         "status",
+      ];
+
+      const setClause = [];
+      const values = [];
+
+      allowedFields.forEach((field) => {
+         if (updateData[field] !== undefined) {
+            setClause.push(`${field} = ?`);
+            values.push(updateData[field]);
+         }
+      });
+
+      if (setClause.length === 0) {
+         throw new AppError(
+            "No valid fields to update",
+            HTTP_STATUS.BAD_REQUEST
+         );
+      }
+
+      setClause.push("updated_at = CURRENT_TIMESTAMP");
+      values.push(id);
+
+      const query = `UPDATE room_types SET ${setClause.join(
+         ", "
+      )} WHERE id = ?`;
+
+      try {
+         const [result] = await pool.execute(query, values);
+         if (result.affectedRows === 0) {
+            throw new AppError(
+               "Room type not found or no changes made",
+               HTTP_STATUS.NOT_FOUND
+            );
+         }
+         return { id, ...updateData };
+      } catch (error) {
+         if (error.code === "ER_DUP_ENTRY") {
+            if (error.message.includes("name")) {
+               throw new AppError(
+                  "Another room type already exists with this name for the hotel",
+                  HTTP_STATUS.BAD_REQUEST
+               );
+            }
+         }
+         if (error instanceof AppError) {
+            throw error;
+         }
+         throw new AppError(
+            "Internal server error during room type update",
+            HTTP_STATUS.INTERNAL_SERVER_ERROR
+         );
+      }
+   }
+
    // Create Amenities
    static async createAmenity(amenityData) {
       const { id, name, icon_url } = amenityData;
@@ -343,6 +405,29 @@ class HotelModel {
       }
 
       return roomRows;
+   }
+
+   // Add room type images
+   static async addRoomTypeImage(imageData) {
+      const { id, room_type_id, image_url, alt_text } = imageData;
+      const query = `INSERT INTO room_type_images (id, room_type_id, image_url, alt_text)
+        VALUES (?, ?, ?, ?)`;
+      const values = [id, room_type_id, image_url, alt_text];
+      try {
+         const [result] = await pool.execute(query, values);
+         return { ...imageData };
+      } catch (error) {
+         if (error.code === "ER_DUP_ENTRY") {
+            throw new AppError(
+               "Room type image already added with this image url for the room type",
+               HTTP_STATUS.BAD_REQUEST
+            );
+         }
+         throw new AppError(
+            "Internal server error",
+            HTTP_STATUS.INTERNAL_SERVER_ERROR
+         );
+      }
    }
 
    // get room types images

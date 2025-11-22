@@ -63,9 +63,7 @@ export class HotelService {
             throw new AppError("Hotel not found.", HTTP_STATUS.NOT_FOUND);
          }
 
-         return {
-            hotel: updatedHotel,
-         };
+         return updatedHotel;
       } catch (error) {
          if (error instanceof AppError) {
             throw error;
@@ -203,6 +201,31 @@ export class HotelService {
       }
    }
 
+   // update room type
+   static async updateRoomType(roomTypeId, updateData) {
+      try {
+         const updatedRoomType = await HotelModel.updateRoomType(
+            roomTypeId,
+            updateData
+         );
+
+         if (!updatedRoomType) {
+            throw new AppError("Room type not found.", HTTP_STATUS.NOT_FOUND);
+         }
+
+         return updatedRoomType;
+      } catch (error) {
+         if (error instanceof AppError) {
+            throw error;
+         }
+
+         throw new AppError(
+            "Failed to update room type. Please try again.",
+            HTTP_STATUS.INTERNAL_SERVER_ERROR
+         );
+      }
+   }
+
    // Create amenity
    static async createAmenity({ name, icon_url }) {
       try {
@@ -309,6 +332,40 @@ export class HotelService {
 
          throw new AppError(
             "Failed to add room type rooms. Please try again.",
+            HTTP_STATUS.INTERNAL_SERVER_ERROR
+         );
+      }
+   }
+
+   // Add room type images
+   static async addRoomTypeImages({ roomTypeId, images }) {
+      try {
+         let newImages = [];
+         if (images.length) {
+            const promises = images.map(async (image) => {
+               // Generate Object Id
+               const id = generateId();
+               const newImage = await HotelModel.addRoomTypeImage({
+                  id,
+                  room_type_id: roomTypeId,
+                  image_url: image.image_url,
+                  alt_text: image.alt_text,
+               });
+               return newImage;
+            });
+
+            newImages = await Promise.all(promises);
+         }
+
+         return { images: newImages };
+      } catch (error) {
+         // Re-throw AppError instances, otherwise wrap in AppError
+         if (error instanceof AppError) {
+            throw error;
+         }
+
+         throw new AppError(
+            "Failed to add room type images. Please try again.",
             HTTP_STATUS.INTERNAL_SERVER_ERROR
          );
       }
