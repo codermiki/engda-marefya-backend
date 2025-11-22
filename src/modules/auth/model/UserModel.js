@@ -220,6 +220,27 @@ class UserModel {
          );
       }
    }
+
+   // Remove user
+   static async remove(id) {
+      const query = "DELETE FROM users WHERE id = ?";
+
+      try {
+         const user = await this.findById(id);
+         const [result] = await pool.execute(query, [id]);
+
+         if (result.affectedRows === 0) {
+            throw new AppError("User not found", HTTP_STATUS.NOT_FOUND);
+         }
+
+         return user;
+      } catch (error) {
+         throw new AppError(
+            "Internal server error",
+            HTTP_STATUS.INTERNAL_SERVER_ERROR
+         );
+      }
+   }
 }
 
 export default UserModel;

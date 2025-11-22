@@ -8,7 +8,6 @@ import { AdminService } from "../service/index.js";
 export const getUsers = async (req, res, next) => {
    try {
       // optional Query Parameters: role=customer, status=active, page=1, limit=50
-      // make filters and pagination optional
       const { role = null, status = null, page = 1, limit = 50 } = req.query;
 
       const data = await AdminService.getUsers(
@@ -57,6 +56,27 @@ export const updateUserStatus = async (req, res, next) => {
 
       return successResponse(res, {
          message: "User status updated successfully",
+         data,
+         statusCode: HTTP_STATUS.OK,
+      });
+   } catch (error) {
+      next(error);
+   }
+};
+
+// Remove user controller
+export const removeUser = async (req, res, next) => {
+   try {
+      const id = req.params?.id;
+
+      if (!id) {
+         throw new AppError("User id is required", HTTP_STATUS.BAD_REQUEST);
+      }
+
+      const data = await AdminService.removeUser(id);
+
+      return successResponse(res, {
+         message: "User removed successfully",
          data,
          statusCode: HTTP_STATUS.OK,
       });

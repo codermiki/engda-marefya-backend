@@ -88,4 +88,37 @@ export class AdminService {
          );
       }
    }
+
+   static async removeUser(id) {
+      try {
+         const user = await UserModel.findById(id);
+         if (!user) {
+            throw new AppError("User not found", HTTP_STATUS.NOT_FOUND);
+         }
+         const removedUser = await UserModel.remove(id);
+
+         return {
+            id: removedUser.id,
+            user_name: removedUser.user_name,
+            email: removedUser.email,
+            phone_number: removedUser.phone_number,
+            profile_pic_url: removedUser.profile_pic_url,
+            role: removedUser.role,
+            status: removedUser.status,
+            is_email_verified: removedUser.is_email_verified,
+            created_at: removedUser.created_at,
+            updated_at: removedUser.updated_at,
+         };
+      } catch (error) {
+         // Re-throw AppError instances, otherwise wrap in AppError
+         if (error instanceof AppError) {
+            throw error;
+         }
+
+         throw new AppError(
+            "Failed to remove user. Please try again.",
+            HTTP_STATUS.INTERNAL_SERVER_ERROR
+         );
+      }
+   }
 }
