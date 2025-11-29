@@ -50,14 +50,14 @@ export const createHotel = async (req, res, next) => {
 // Update a Hotel
 export const updateHotel = async (req, res, next) => {
    try {
-      const { hotelId } = req.params;
+      const { id } = req.params;
       const updateData = req.body;
 
       if (Object.keys(updateData).length === 0) {
          throw new AppError("No update data provided", HTTP_STATUS.BAD_REQUEST);
       }
 
-      const data = await HotelService.updateHotel(hotelId, updateData);
+      const data = await HotelService.updateHotel(id, updateData);
 
       return successResponse(res, {
          message: "Hotel updated successfully",
@@ -72,27 +72,24 @@ export const updateHotel = async (req, res, next) => {
 // Create a new room type for a hotel
 export const createRoomType = async (req, res, next) => {
    try {
-      const { hotelId } = req.params;
+      const { id } = req.params;
       const {
          name,
          description,
          price_per_night,
          main_image_url,
-         amenity_ids,
+         bed_type,
+         number_of_beds,
       } = req.body;
 
-      // Basic validation
-      if (!name || !description || !price_per_night || !main_image_url) {
-         throw new AppError("All fields are required", HTTP_STATUS.BAD_REQUEST);
-      }
-      // Call service to create room type
       const data = await HotelService.createRoomType({
-         hotelId,
+         hotelId: id,
          name,
          description,
          price_per_night,
          main_image_url,
-         amenity_ids,
+         bed_type,
+         number_of_beds,
       });
 
       return successResponse(res, {
@@ -108,8 +105,8 @@ export const createRoomType = async (req, res, next) => {
 // get room types details
 export const getRoomTypesById = async (req, res, next) => {
    try {
-      const { roomTypeId } = req.params;
-      const data = await HotelService.getRoomTypeById(roomTypeId);
+      const { id } = req.params;
+      const data = await HotelService.getRoomTypeById(id);
 
       return successResponse(res, {
          message: "Room type fetched successfully",
@@ -124,44 +121,19 @@ export const getRoomTypesById = async (req, res, next) => {
 // update room type
 export const updateRoomType = async (req, res, next) => {
    try {
-      const { roomTypeId } = req.params;
+      const { id } = req.params;
       const updateData = req.body;
 
       if (Object.keys(updateData).length === 0) {
          throw new AppError("No update data provided", HTTP_STATUS.BAD_REQUEST);
       }
 
-      const data = await HotelService.updateRoomType(roomTypeId, updateData);
+      const data = await HotelService.updateRoomType(id, updateData);
 
       return successResponse(res, {
          message: "Room type updated successfully",
          data,
          statusCode: HTTP_STATUS.OK,
-      });
-   } catch (error) {
-      next(error);
-   }
-};
-
-// Create a new Amenities
-export const createAmenity = async (req, res, next) => {
-   try {
-      const { name, icon_url } = req.body;
-
-      // Basic validation
-      if (!name || !icon_url) {
-         throw new AppError("All fields are required", HTTP_STATUS.BAD_REQUEST);
-      }
-      // Call service to create room type
-      const data = await HotelService.createAmenity({
-         name,
-         icon_url,
-      });
-
-      return successResponse(res, {
-         message: "Amenities created successfully",
-         data,
-         statusCode: HTTP_STATUS.CREATED,
       });
    } catch (error) {
       next(error);
@@ -186,7 +158,7 @@ export const getAmenities = async (req, res, next) => {
 // Add amenities for the room
 export const addRoomTypeAmenities = async (req, res, next) => {
    try {
-      const { roomTypeId } = req.params;
+      const { id } = req.params;
       const { amenity_ids } = req.body;
 
       // Basic validation
@@ -198,7 +170,7 @@ export const addRoomTypeAmenities = async (req, res, next) => {
       }
       // Call service to create room type
       const data = await HotelService.addRoomTypeAmenities({
-         roomTypeId,
+         roomTypeId: id,
          amenity_ids,
       });
 
@@ -215,7 +187,7 @@ export const addRoomTypeAmenities = async (req, res, next) => {
 // Add rooms for a room type
 export const addRoomTypeRooms = async (req, res, next) => {
    try {
-      const { roomTypeId } = req.params;
+      const { id } = req.params;
       const { room_numbers } = req.body;
 
       // Basic validation
@@ -227,7 +199,7 @@ export const addRoomTypeRooms = async (req, res, next) => {
       }
       // Call service to create room type
       const data = await HotelService.addRoomTypeRooms({
-         roomTypeId,
+         roomTypeId: id,
          room_numbers,
       });
 
@@ -244,7 +216,7 @@ export const addRoomTypeRooms = async (req, res, next) => {
 // Add room type images
 export const addRoomTypeImages = async (req, res, next) => {
    try {
-      const { roomTypeId } = req.params;
+      const { id } = req.params;
       const { images } = req.body;
 
       // Basic validation
@@ -256,7 +228,7 @@ export const addRoomTypeImages = async (req, res, next) => {
       }
       // Call service to create room type
       const data = await HotelService.addRoomTypeImages({
-         roomTypeId,
+         roomTypeId: id,
          images,
       });
 
@@ -273,12 +245,102 @@ export const addRoomTypeImages = async (req, res, next) => {
 // Get hotel by id
 export const getHotelById = async (req, res, next) => {
    try {
-      const { hotelId } = req.params;
-      const data = await HotelService.getHotelById(hotelId);
+      const { id } = req.params;
+      const data = await HotelService.getHotelById(id);
 
       return successResponse(res, {
          message: "Hotel fetched successfully",
          data,
+         statusCode: HTTP_STATUS.OK,
+      });
+   } catch (error) {
+      next(error);
+   }
+};
+
+// Get hotel by owner id
+export const getHotelsByOwnerId = async (req, res, next) => {
+   try {
+      const { id } = req.params;
+      const data = await HotelService.getHotelsByOwnerId(id);
+
+      return successResponse(res, {
+         message: "Hotels fetched successfully",
+         data,
+         statusCode: HTTP_STATUS.OK,
+      });
+   } catch (error) {
+      next(error);
+   }
+};
+
+// Update room type room status
+export const updateRoomTypeRoomStatus = async (req, res, next) => {
+   try {
+      const { roomId } = req.params;
+      const updateData = req.body;
+
+      if (!roomId) {
+         throw new AppError("Room id is required", HTTP_STATUS.BAD_REQUEST);
+      }
+      if (!Object.keys(updateData).length) {
+         throw new AppError("Update data is required", HTTP_STATUS.BAD_REQUEST);
+      }
+      // Call service to create room type
+      const data = await HotelService.updateRoomTypeRoomStatus(
+         roomId,
+         updateData.status
+      );
+
+      return successResponse(res, {
+         message: "Room status updated successfully",
+         data,
+         statusCode: HTTP_STATUS.OK,
+      });
+   } catch (error) {
+      next(error);
+   }
+};
+
+// Delete image from a room type
+export const deleteRoomTypeImage = async (req, res, next) => {
+   try {
+      const { imageId } = req.params;
+      const data = await HotelService.deleteRoomTypeImage(imageId);
+
+      return successResponse(res, {
+         message: "Image deleted successfully",
+         data,
+         statusCode: HTTP_STATUS.OK,
+      });
+   } catch (error) {
+      next(error);
+   }
+};
+
+// Get all hotels with pagination and search
+export const getAllHotels = async (req, res, next) => {
+   try {
+      const data = await HotelService.getAllHotels(req?.query);
+
+      return successResponse(res, {
+         message: "Hotels fetched successfully",
+         data: { hotels: data.hotels, pagination: data.meta },
+         statusCode: HTTP_STATUS.OK,
+      });
+   } catch (error) {
+      next(error);
+   }
+};
+
+// Get all room types with filter, pagination and search
+export const getAllRoomTypes = async (req, res, next) => {
+   try {
+      const data = await HotelService.getAllRoomTypes(req?.query);
+
+      return successResponse(res, {
+         message: "Room types fetched successfully",
+         data: { roomTypes: data.roomTypes, pagination: data.meta },
          statusCode: HTTP_STATUS.OK,
       });
    } catch (error) {

@@ -30,6 +30,10 @@ class HotelModel {
 
       try {
          const [result] = await pool.execute(query, values);
+         if (result.affectedRows === 0) {
+            return null;
+         }
+
          return { id, ...hotelData };
       } catch (error) {
          if (error.code === "ER_DUP_ENTRY") {
@@ -116,10 +120,11 @@ class HotelModel {
          description,
          price_per_night,
          main_image_url,
+         bed_type,
+         number_of_beds,
       } = roomTypeData;
-
-      const query = `INSERT INTO room_types (id, hotel_id, name, description, price_per_night, main_image_url)
-        VALUES (?, ?, ?, ?, ?, ?)`;
+      const query = `INSERT INTO room_types (id, hotel_id, name, description, price_per_night, main_image_url, bed_type, number_of_beds)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
       const values = [
          id,
          hotel_id,
@@ -127,9 +132,15 @@ class HotelModel {
          description,
          price_per_night,
          main_image_url,
+         bed_type,
+         number_of_beds,
       ];
       try {
          const [result] = await pool.execute(query, values);
+         if (result.affectedRows === 0) {
+            return null;
+         }
+
          return { ...roomTypeData };
       } catch (error) {
          if (error.code === "ER_DUP_ENTRY") {
@@ -158,6 +169,8 @@ class HotelModel {
             rt.price_per_night,
             rt.main_image_url,
             rt.status,
+            rt.bed_type,
+            rt.number_of_beds,
             rt.created_at,
             rt.updated_at,
             h.name AS hotel_name,
@@ -173,6 +186,7 @@ class HotelModel {
          if (rows.length === 0) {
             return null;
          }
+
          return rows[0];
       } catch (error) {
          if (error instanceof AppError) {
@@ -222,11 +236,9 @@ class HotelModel {
       try {
          const [result] = await pool.execute(query, values);
          if (result.affectedRows === 0) {
-            throw new AppError(
-               "Room type not found or no changes made",
-               HTTP_STATUS.NOT_FOUND
-            );
+            return null;
          }
+
          return { id, ...updateData };
       } catch (error) {
          if (error.code === "ER_DUP_ENTRY") {
@@ -256,6 +268,10 @@ class HotelModel {
       const values = [id, name, icon_url];
       try {
          const [result] = await pool.execute(query, values);
+         if (result.affectedRows === 0) {
+            return null;
+         }
+
          return { ...amenityData };
       } catch (error) {
          if (error.code === "ER_DUP_ENTRY") {
@@ -279,6 +295,7 @@ class HotelModel {
         FROM amenities`;
       try {
          const [rows] = await pool.execute(query);
+
          return rows;
       } catch (error) {
          throw new AppError(
@@ -296,6 +313,10 @@ class HotelModel {
       const values = [id, room_type_id, amenity_id];
       try {
          const [result] = await pool.execute(query, values);
+         if (result.affectedRows === 0) {
+            return null;
+         }
+
          return amenityData;
       } catch (error) {
          if (error.code === "ER_DUP_ENTRY") {
@@ -319,6 +340,10 @@ class HotelModel {
       const values = [id, room_type_id, room_number];
       try {
          const [result] = await pool.execute(query, values);
+         if (result.affectedRows === 0) {
+            return null;
+         }
+
          return roomData;
       } catch (error) {
          if (error.code === "ER_DUP_ENTRY") {
@@ -342,9 +367,8 @@ class HotelModel {
           WHERE id = ?`,
          [hotelId]
       );
-
       if (hotelRows.length === 0) {
-         return null; // Hotel not found
+         return null;
       }
 
       return hotelRows[0];
@@ -360,31 +384,36 @@ class HotelModel {
          query += " AND status = ?";
          values.push(status);
       }
-      // Fetch room types for the hotel
-      const [roomTypeRows] = await pool.execute(query, values);
+      try {
+         // Fetch room types for the hotel
+         const [roomTypeRows] = await pool.execute(query, values);
 
-      if (roomTypeRows.length === 0) {
-         return null; // No room types found for the hotel
+         return roomTypeRows;
+      } catch (error) {
+         throw new AppError(
+            "Internal server error",
+            HTTP_STATUS.INTERNAL_SERVER_ERROR
+         );
       }
-
-      return roomTypeRows;
    }
 
    // get room types amenities
    static async getRoomTypeAmenities(roomTypeId) {
-      const [amenityRows] = await pool.execute(
-         `SELECT a.id, a.name, a.icon_url
+      const query = `SELECT a.id, a.name, a.icon_url
           FROM amenities a
           JOIN room_type_amenities rta ON a.id = rta.amenity_id
-          WHERE rta.room_type_id = ?`,
-         [roomTypeId]
-      );
+          WHERE rta.room_type_id = ?`;
+      const values = [roomTypeId];
+      try {
+         const [amenityRows] = await pool.execute(query, values);
 
-      if (amenityRows.length === 0) {
-         return null; // No amenities found for the room type
+         return amenityRows;
+      } catch (error) {
+         throw new AppError(
+            "Internal server error",
+            HTTP_STATUS.INTERNAL_SERVER_ERROR
+         );
       }
-
-      return amenityRows;
    }
 
    // get room types rooms
@@ -397,14 +426,16 @@ class HotelModel {
          query += " AND status = ?";
          values.push(status);
       }
+      try {
+         const [roomRows] = await pool.execute(query, values);
 
-      const [roomRows] = await pool.execute(query, values);
-
-      if (roomRows.length === 0) {
-         return null; // No rooms found for the room type
+         return roomRows;
+      } catch (error) {
+         throw new AppError(
+            "Internal server error",
+            HTTP_STATUS.INTERNAL_SERVER_ERROR
+         );
       }
-
-      return roomRows;
    }
 
    // Add room type images
@@ -415,6 +446,10 @@ class HotelModel {
       const values = [id, room_type_id, image_url, alt_text];
       try {
          const [result] = await pool.execute(query, values);
+         if (result.affectedRows === 0) {
+            return null;
+         }
+
          return { ...imageData };
       } catch (error) {
          if (error.code === "ER_DUP_ENTRY") {
@@ -436,12 +471,271 @@ class HotelModel {
           FROM room_type_images
           WHERE room_type_id = ?`;
       const values = [roomTypeId];
-      const [imageRows] = await pool.execute(query, values);
-      if (imageRows.length === 0) {
-         return null; // No images found for the room type
+      try {
+         const [imageRows] = await pool.execute(query, values);
+
+         return imageRows;
+      } catch (error) {
+         throw new AppError(
+            "Internal server error",
+            HTTP_STATUS.INTERNAL_SERVER_ERROR
+         );
+      }
+   }
+
+   // Get hotels by owner id
+   static async getHotelsByOwnerId(ownerId) {
+      const query = `SELECT id, owner_id, name, location, contact_info, description, business_license, profile_pic_url
+          FROM hotels
+          WHERE owner_id = ?`;
+      const values = [ownerId];
+      try {
+         const [hotelRows] = await pool.execute(query, values);
+         if (hotelRows.length === 0) {
+            return null; // No hotels found for the owner
+         }
+
+         return hotelRows;
+      } catch (error) {
+         throw new AppError(
+            "Internal server error",
+            HTTP_STATUS.INTERNAL_SERVER_ERROR
+         );
+      }
+   }
+
+   // Update room type room status
+   static async updateRoomTypeRoomStatus({ room_id, status }) {
+      if (!["available", "booked", "maintenance"].includes(status)) {
+         throw new AppError(
+            "Invalid status. Status must be 'available', 'booked' or 'maintenance'.",
+            HTTP_STATUS.BAD_REQUEST
+         );
       }
 
-      return imageRows;
+      const query = `UPDATE rooms SET status = ? WHERE id = ?`;
+      const values = [status, room_id];
+      try {
+         const [result] = await pool.execute(query, values);
+         if (result.affectedRows === 0) {
+            return null;
+         }
+
+         return { room_id, status };
+      } catch (error) {
+         throw new AppError(
+            "Internal server error",
+            HTTP_STATUS.INTERNAL_SERVER_ERROR
+         );
+      }
+   }
+
+   // Delete image from a room type
+   static async deleteRoomTypeImage(imageId) {
+      const query = `DELETE FROM room_type_images WHERE id = ?`;
+      const values = [imageId];
+      try {
+         const [result] = await pool.execute(query, values);
+         if (result.affectedRows === 0) {
+            return null;
+         }
+
+         return { imageId };
+      } catch (error) {
+         throw new AppError(
+            "Internal server error",
+            HTTP_STATUS.INTERNAL_SERVER_ERROR
+         );
+      }
+   }
+
+   // Get all hotels
+   static async getAllHotels({ page = 1, limit = 10, search = "" }) {
+      const offset = (page - 1) * limit;
+
+      let query = `
+        SELECT id, owner_id, name, location, contact_info, description, business_license, profile_pic_url
+        FROM hotels
+    `;
+
+      const values = [];
+
+      if (search) {
+         query += ` WHERE name LIKE ? OR location LIKE ? OR description LIKE ?`;
+         values.push(`%${search}%`, `%${search}%`, `%${search}%`);
+      }
+
+      query += ` LIMIT ${Number(limit)} OFFSET ${Number(offset)}`;
+
+      try {
+         const [hotelRows] = await pool.execute(query, values);
+
+         if (hotelRows.length === 0) {
+            return null;
+         }
+
+         return hotelRows;
+      } catch (error) {
+         throw new AppError(
+            "Internal server error",
+            HTTP_STATUS.INTERNAL_SERVER_ERROR
+         );
+      }
+   }
+
+   // Count all hotels with search
+   static async countAllHotels({ search = "" }) {
+      let query = `SELECT COUNT(*) as count FROM hotels`;
+      const values = [];
+
+      if (search) {
+         query += ` WHERE name LIKE ? OR location LIKE ? OR description LIKE ?`;
+         values.push(`%${search}%`, `%${search}%`, `%${search}%`);
+      }
+
+      try {
+         const [hotelRows] = await pool.execute(query, values);
+
+         if (hotelRows.length === 0) {
+            return 0;
+         }
+
+         return hotelRows[0].count;
+      } catch (error) {
+         throw new AppError(
+            "Internal server error",
+            HTTP_STATUS.INTERNAL_SERVER_ERROR
+         );
+      }
+   }
+
+   // Get all room types with filter, pagination and search
+   static async getAllRoomTypes({
+      search = "",
+      minPrice,
+      maxPrice,
+      bedType,
+      numberOfBeds,
+      limit = 10,
+      page = 1,
+   }) {
+      const offset = (page - 1) * limit;
+      let query = `
+         SELECT rt.*, h.name AS hotel_name, h.location AS hotel_location
+         FROM room_types rt
+         JOIN hotels h ON rt.hotel_id = h.id
+      `;
+      const values = [];
+      const conditions = [];
+
+      if (search) {
+         conditions.push(`(h.location LIKE ? OR h.name LIKE ?)`);
+         values.push(`%${search}%`, `%${search}%`);
+      }
+
+      if (minPrice !== undefined && maxPrice !== undefined) {
+         conditions.push(`rt.price_per_night BETWEEN ? AND ?`);
+         values.push(minPrice, maxPrice);
+      } else if (minPrice !== undefined) {
+         conditions.push(`rt.price_per_night >= ?`);
+         values.push(minPrice);
+      } else if (maxPrice !== undefined) {
+         conditions.push(`rt.price_per_night <= ?`);
+         values.push(maxPrice);
+      }
+
+      if (bedType) {
+         conditions.push(`rt.bed_type = ?`);
+         values.push(bedType);
+      }
+
+      if (numberOfBeds !== undefined) {
+         conditions.push(`rt.number_of_beds = ?`);
+         values.push(numberOfBeds);
+      }
+
+      if (conditions.length > 0) {
+         query += ` WHERE ` + conditions.join(` AND `);
+      }
+
+      query += ` AND rt.status = 'active' LIMIT ${Number(
+         limit
+      )} OFFSET ${Number(offset)}`;
+
+      try {
+         const [roomTypeRows] = await pool.execute(query, values);
+
+         return roomTypeRows;
+      } catch (error) {
+         throw new AppError(
+            "Internal server error",
+            HTTP_STATUS.INTERNAL_SERVER_ERROR
+         );
+      }
+   }
+
+   // Count all room types with filter, pagination and search
+   static async countAllRoomTypes({
+      search = "",
+      minPrice,
+      maxPrice,
+      bedType,
+      numberOfBeds,
+   }) {
+      let query = `
+         SELECT COUNT(*) AS count
+         FROM room_types rt
+         JOIN hotels h ON rt.hotel_id = h.id
+      `;
+      const values = [];
+      const conditions = [];
+
+      if (search) {
+         conditions.push(`(h.location LIKE ? OR h.name LIKE ?)`);
+         values.push(`%${search}%`, `%${search}%`);
+      }
+
+      if (minPrice !== undefined && maxPrice !== undefined) {
+         conditions.push(`rt.price_per_night BETWEEN ? AND ?`);
+         values.push(minPrice, maxPrice);
+      } else if (minPrice !== undefined) {
+         conditions.push(`rt.price_per_night >= ?`);
+         values.push(minPrice);
+      } else if (maxPrice !== undefined) {
+         conditions.push(`rt.price_per_night <= ?`);
+         values.push(maxPrice);
+      }
+
+      if (bedType) {
+         conditions.push(`rt.bed_type = ?`);
+         values.push(bedType);
+      }
+
+      if (numberOfBeds !== undefined) {
+         conditions.push(`rt.number_of_beds = ?`);
+         values.push(numberOfBeds);
+      }
+
+      if (conditions.length > 0) {
+         query += ` WHERE ` + conditions.join(` AND `);
+      }
+
+      query += ` AND rt.status = 'active'`;
+
+      try {
+         const [roomTypeRows] = await pool.execute(query, values);
+
+         if (roomTypeRows.length === 0) {
+            return 0;
+         }
+
+         return roomTypeRows[0].count;
+      } catch (error) {
+         throw new AppError(
+            "Internal server error",
+            HTTP_STATUS.INTERNAL_SERVER_ERROR
+         );
+      }
    }
 }
 

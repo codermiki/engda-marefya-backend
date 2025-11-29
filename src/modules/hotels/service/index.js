@@ -28,19 +28,14 @@ export class HotelService {
             business_license,
             profile_pic_url,
          });
+         if (!newHotel) {
+            throw new AppError(
+               "Failed to create hotel.",
+               HTTP_STATUS.INTERNAL_SERVER_ERROR
+            );
+         }
 
-         return {
-            id: newHotel.id,
-            owner_id: newHotel.owner_id,
-            name: newHotel.name,
-            location: newHotel.location,
-            contact_info: newHotel.contact_info,
-            description: newHotel.description,
-            business_license: newHotel.business_license,
-            profile_pic_url: newHotel.profile_pic_url,
-            created_at: newHotel.created_at,
-            updated_at: newHotel.updated_at,
-         };
+         return newHotel;
       } catch (error) {
          // Re-throw AppError instances, otherwise wrap in AppError
          if (error instanceof AppError) {
@@ -83,6 +78,8 @@ export class HotelService {
       description,
       price_per_night,
       main_image_url,
+      bed_type,
+      number_of_beds,
    }) {
       try {
          // Generate Object Id
@@ -95,19 +92,17 @@ export class HotelService {
             description,
             price_per_night,
             main_image_url,
+            bed_type,
+            number_of_beds,
          });
+         if (!newRoomType) {
+            throw new AppError(
+               "Failed to create room type.",
+               HTTP_STATUS.INTERNAL_SERVER_ERROR
+            );
+         }
 
-         return {
-            id: newRoomType.id,
-            hotelId: newRoomType.hotelId,
-            name: newRoomType.name,
-            description: newRoomType.description,
-            price_per_night: newRoomType.price_per_night,
-            main_image_url: newRoomType.main_image_url,
-            amenity_ids: newRoomType.amenity_ids,
-            created_at: newRoomType.created_at,
-            updated_at: newRoomType.updated_at,
-         };
+         return newRoomType;
       } catch (error) {
          // Re-throw AppError instances, otherwise wrap in AppError
          if (error instanceof AppError) {
@@ -131,7 +126,7 @@ export class HotelService {
 
          // Check if room type exists
          if (!roomType) {
-            roomType = [];
+            throw new AppError("Room type not found", HTTP_STATUS.NOT_FOUND);
          }
 
          // Check if rooms exist
@@ -156,6 +151,8 @@ export class HotelService {
             price_per_night: roomType.price_per_night,
             main_image_url: roomType.main_image_url,
             status: roomType.status,
+            bed_type: roomType.bed_type,
+            number_of_beds: roomType.number_of_beds,
             hotel: {
                id: roomType.hotel_id,
                name: roomType.hotel_name,
@@ -226,38 +223,6 @@ export class HotelService {
       }
    }
 
-   // Create amenity
-   static async createAmenity({ name, icon_url }) {
-      try {
-         // Generate Object Id
-         const id = generateId();
-
-         const newAmenity = await HotelModel.createAmenity({
-            id,
-            name,
-            icon_url,
-         });
-
-         return {
-            id: newAmenity.id,
-            name: newAmenity.name,
-            icon_url: newAmenity.icon_url,
-            created_at: newAmenity.created_at,
-            updated_at: newAmenity.updated_at,
-         };
-      } catch (error) {
-         // Re-throw AppError instances, otherwise wrap in AppError
-         if (error instanceof AppError) {
-            throw error;
-         }
-
-         throw new AppError(
-            "Failed to create Amenities. Please try again.",
-            HTTP_STATUS.INTERNAL_SERVER_ERROR
-         );
-      }
-   }
-
    // Get amenities
    static async getAmenities() {
       try {
@@ -284,10 +249,18 @@ export class HotelService {
                   room_type_id: roomTypeId,
                   amenity_id,
                });
-               return newAmenity.id;
+               if (newAmenity) {
+                  return newAmenity.id;
+               }
             });
 
             amenities = await Promise.all(promises);
+         }
+         if (!amenities) {
+            throw new AppError(
+               "Failed to add room type amenities.",
+               HTTP_STATUS.INTERNAL_SERVER_ERROR
+            );
          }
 
          return { amenities };
@@ -317,10 +290,18 @@ export class HotelService {
                   room_type_id: roomTypeId,
                   room_number,
                });
-               return newRoom.id;
+               if (newRoom) {
+                  return newRoom?.id;
+               }
             });
 
             rooms = await Promise.all(promises);
+         }
+         if (!rooms) {
+            throw new AppError(
+               "Failed to add room type rooms.",
+               HTTP_STATUS.INTERNAL_SERVER_ERROR
+            );
          }
 
          return { rooms };
@@ -351,10 +332,18 @@ export class HotelService {
                   image_url: image.image_url,
                   alt_text: image.alt_text,
                });
-               return newImage;
+               if (newImage) {
+                  return newImage;
+               }
             });
 
             newImages = await Promise.all(promises);
+         }
+         if (!newImages) {
+            throw new AppError(
+               "Failed to add room type images.",
+               HTTP_STATUS.INTERNAL_SERVER_ERROR
+            );
          }
 
          return { images: newImages };
@@ -429,13 +418,161 @@ export class HotelService {
             updated_at: hotel.updated_at,
          };
       } catch (error) {
-         console.log(error);
          if (error instanceof AppError) {
             throw error;
          }
 
          throw new AppError(
             "Failed to retrieve hotel details. Please try again.",
+            HTTP_STATUS.INTERNAL_SERVER_ERROR
+         );
+      }
+   }
+
+   // Get hotels by owner id
+   static async getHotelsByOwnerId(ownerId) {
+      try {
+         const hotels = await HotelModel.getHotelsByOwnerId(ownerId);
+
+         if (!hotels) {
+            throw new AppError("Hotels not found.", HTTP_STATUS.NOT_FOUND);
+         }
+
+         return { hotels };
+      } catch (error) {
+         if (error instanceof AppError) {
+            throw error;
+         }
+
+         throw new AppError(
+            "Failed to retrieve hotels. Please try again.",
+            HTTP_STATUS.INTERNAL_SERVER_ERROR
+         );
+      }
+   }
+
+   // Update room type room status
+   static async updateRoomTypeRoomStatus(room_id, status) {
+      try {
+         const room = await HotelModel.updateRoomTypeRoomStatus({
+            room_id,
+            status,
+         });
+
+         if (!room) {
+            throw new AppError("Room not found.", HTTP_STATUS.NOT_FOUND);
+         }
+
+         return { room };
+      } catch (error) {
+         if (error instanceof AppError) {
+            throw error;
+         }
+
+         throw new AppError(
+            "Failed to update room status. Please try again.",
+            HTTP_STATUS.INTERNAL_SERVER_ERROR
+         );
+      }
+   }
+
+   // Delete image from a room type
+   static async deleteRoomTypeImage(imageId) {
+      try {
+         const image = await HotelModel.deleteRoomTypeImage(imageId);
+
+         if (!image) {
+            throw new AppError("Image not found.", HTTP_STATUS.NOT_FOUND);
+         }
+
+         return { image };
+      } catch (error) {
+         if (error instanceof AppError) {
+            throw error;
+         }
+
+         throw new AppError(
+            "Failed to delete image. Please try again.",
+            HTTP_STATUS.INTERNAL_SERVER_ERROR
+         );
+      }
+   }
+
+   // Get all hotels with pagination and search
+   static async getAllHotels(query) {
+      try {
+         const count = await HotelModel.countAllHotels({
+            search: query?.search,
+         });
+         if (count === 0) {
+            throw new AppError("Hotels not found.", HTTP_STATUS.NOT_FOUND);
+         }
+
+         const hotels = await HotelModel.getAllHotels({
+            page: query?.page,
+            limit: query?.limit,
+            search: query?.search,
+         });
+
+         let meta = {};
+         // prepare meta information
+         if (query?.page && query?.limit) {
+            meta.page = query?.page;
+            meta.limit = query?.limit;
+            meta.total = count;
+         } else {
+            meta.page = parseInt(1, 10);
+            meta.limit = parseInt(count, 10);
+            meta.total = parseInt(count, 10);
+         }
+
+         return { hotels, meta };
+      } catch (error) {
+         if (error instanceof AppError) {
+            throw error;
+         }
+
+         throw new AppError(
+            "Failed to retrieve hotels. Please try again.",
+            HTTP_STATUS.INTERNAL_SERVER_ERROR
+         );
+      }
+   }
+
+   // Get all room types with filter, pagination and search
+   static async getAllRoomTypes(query) {
+      try {
+         const count = await HotelModel.countAllRoomTypes({
+            ...query,
+         });
+         if (count === 0) {
+            throw new AppError("Room types not found.", HTTP_STATUS.NOT_FOUND);
+         }
+
+         const roomTypes = await HotelModel.getAllRoomTypes({
+            ...query,
+         });
+
+         let meta = {};
+         // prepare meta information
+         if (query?.page && query?.limit) {
+            meta.page = query?.page;
+            meta.limit = query?.limit;
+            meta.total = count;
+         } else {
+            meta.page = parseInt(1, 10);
+            meta.limit = parseInt(count, 10);
+            meta.total = parseInt(count, 10);
+         }
+
+         return { roomTypes, meta };
+      } catch (error) {
+         if (error instanceof AppError) {
+            throw error;
+         }
+
+         throw new AppError(
+            "Failed to retrieve room types. Please try again.",
             HTTP_STATUS.INTERNAL_SERVER_ERROR
          );
       }

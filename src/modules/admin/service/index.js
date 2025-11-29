@@ -1,6 +1,7 @@
 import { HTTP_STATUS } from "../../../constants/http.js";
 import AppError from "../../../utils/AppError.js";
 import UserModel from "../../auth/model/UserModel.js";
+import HotelModel from "../../hotels/model/HotelModel.js";
 
 export class AdminService {
    static async getUsers(role, status, page, limit) {
@@ -117,6 +118,37 @@ export class AdminService {
 
          throw new AppError(
             "Failed to remove user. Please try again.",
+            HTTP_STATUS.INTERNAL_SERVER_ERROR
+         );
+      }
+   }
+
+   static async createAmenity({ name, icon_url }) {
+      try {
+         // Generate Object Id
+         const id = generateId();
+
+         const newAmenity = await HotelModel.createAmenity({
+            id,
+            name,
+            icon_url,
+         });
+
+         return {
+            id: newAmenity.id,
+            name: newAmenity.name,
+            icon_url: newAmenity.icon_url,
+            created_at: newAmenity.created_at,
+            updated_at: newAmenity.updated_at,
+         };
+      } catch (error) {
+         // Re-throw AppError instances, otherwise wrap in AppError
+         if (error instanceof AppError) {
+            throw error;
+         }
+
+         throw new AppError(
+            "Failed to create Amenities. Please try again.",
             HTTP_STATUS.INTERNAL_SERVER_ERROR
          );
       }

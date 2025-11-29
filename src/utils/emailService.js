@@ -62,7 +62,7 @@ class EmailService {
          // Validate transporter
          if (!this.transporter) {
             throw new AppError(
-               "Email service is not configured",
+               "Email service is not Working, Please try again later",
                HTTP_STATUS.INTERNAL_SERVER_ERROR
             );
          }
@@ -90,7 +90,6 @@ class EmailService {
          // Update email log to sent
          await EmailLogModel.updateStatus(emailLogId, "sent");
 
-         console.log(`Email sent successfully to: ${mailOptions.to}`);
          return result;
       } catch (error) {
          // Update email log to failed

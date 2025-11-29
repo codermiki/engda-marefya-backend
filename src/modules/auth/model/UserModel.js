@@ -130,7 +130,6 @@ class UserModel {
          const [rows] = await pool.execute(query, values);
          return rows;
       } catch (error) {
-         console.log(error);
          throw new AppError(
             "Internal server error",
             HTTP_STATUS.INTERNAL_SERVER_ERROR

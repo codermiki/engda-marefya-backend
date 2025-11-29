@@ -1,12 +1,26 @@
 import { Router } from "express";
 import { getUserProfile, updateUserProfile } from "../controller/index.js";
+import {
+   verifyToken,
+   requireUserOwnership,
+} from "../../../middlewares/authMiddleware.js";
 
 const router = Router();
 
 // Get user profile route
-router.get("/:id", getUserProfile);
+router.get(
+   "/:id",
+   verifyToken,
+   requireUserOwnership(["admin"]),
+   getUserProfile
+);
 
 // Update user profile route
-router.put("/:id", updateUserProfile);
+router.put(
+   "/:id",
+   verifyToken,
+   requireUserOwnership(["admin"]),
+   updateUserProfile
+);
 
 export default router;

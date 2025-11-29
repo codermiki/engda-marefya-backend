@@ -84,3 +84,28 @@ export const removeUser = async (req, res, next) => {
       next(error);
    }
 };
+
+// Create a new Amenities
+export const createAmenity = async (req, res, next) => {
+   try {
+      const { name, icon_url } = req.body;
+
+      // Basic validation
+      if (!name || !icon_url) {
+         throw new AppError("All fields are required", HTTP_STATUS.BAD_REQUEST);
+      }
+      // Call service to create room type
+      const data = await AdminService.createAmenity({
+         name,
+         icon_url,
+      });
+
+      return successResponse(res, {
+         message: "Amenities created successfully",
+         data,
+         statusCode: HTTP_STATUS.CREATED,
+      });
+   } catch (error) {
+      next(error);
+   }
+};

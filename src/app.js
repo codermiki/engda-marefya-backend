@@ -10,8 +10,9 @@ import authRoutes from "./modules/auth/routes/index.js";
 import usersRoutes from "./modules/users/routes/index.js";
 import adminRoutes from "./modules/admin/routes/index.js";
 import hotelsRoutes from "./modules/hotels/routes/index.js";
-import {logger} from "./utils/logger.js";
-
+import { logger } from "./utils/logger.js";
+import { HotelService } from "./modules/hotels/service/index.js";
+import { UserService } from "./modules/users/service/index.js";
 const app = express();
 
 // ====== Global Middlewares ======
@@ -30,6 +31,10 @@ app.use("/api/v1/health", (req, res) => {
    });
 });
 
+// set hotel service
+app.set("hotelService", HotelService);
+// set user service
+app.set("userService", UserService);
 // ====== Api Routes ======
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/users", usersRoutes);

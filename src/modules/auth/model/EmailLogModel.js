@@ -48,7 +48,6 @@ class EmailLogModel {
             throw error;
          }
 
-         console.error("Database error in EmailLogModel.create:", error);
          throw new AppError(
             "Failed to create email log",
             HTTP_STATUS.INTERNAL_SERVER_ERROR
@@ -77,7 +76,6 @@ class EmailLogModel {
             throw error;
          }
 
-         console.error("Database error in EmailLogModel.updateStatus:", error);
          throw new AppError(
             "Failed to update email log status",
             HTTP_STATUS.INTERNAL_SERVER_ERROR
@@ -105,7 +103,6 @@ class EmailLogModel {
             throw error;
          }
 
-         console.error("Database error in EmailLogModel.findById:", error);
          throw new AppError(
             "Failed to find email log",
             HTTP_STATUS.INTERNAL_SERVER_ERROR
@@ -124,7 +121,6 @@ class EmailLogModel {
          const [rows] = await pool.execute(query, [emailType, limit, offset]);
          return rows;
       } catch (error) {
-         console.error("Database error in EmailLogModel.findByType:", error);
          throw new AppError(
             "Failed to fetch email logs by type",
             HTTP_STATUS.INTERNAL_SERVER_ERROR
@@ -143,7 +139,6 @@ class EmailLogModel {
          const [rows] = await pool.execute(query, [status, limit, offset]);
          return rows;
       } catch (error) {
-         console.error("Database error in EmailLogModel.findByStatus:", error);
          throw new AppError(
             "Failed to fetch email logs by status",
             HTTP_STATUS.INTERNAL_SERVER_ERROR
@@ -160,10 +155,8 @@ class EmailLogModel {
 
       try {
          const [result] = await pool.execute(query, [days]);
-         console.log(`Deleted ${result.affectedRows} old email logs`);
          return result.affectedRows;
       } catch (error) {
-         console.error("Database error in EmailLogModel.deleteOldLogs:", error);
          throw new AppError(
             "Failed to delete old email logs",
             HTTP_STATUS.INTERNAL_SERVER_ERROR

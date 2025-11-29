@@ -4,38 +4,148 @@ import {
    updateHotel,
    createRoomType,
    addRoomTypeAmenities,
-   createAmenity,
    addRoomTypeRooms,
    addRoomTypeImages,
    getHotelById,
    getAmenities,
    getRoomTypesById,
    updateRoomType,
+   getHotelsByOwnerId,
+   updateRoomTypeRoomStatus,
+   deleteRoomTypeImage,
+   getAllHotels,
+   getAllRoomTypes,
 } from "../controller/index.js";
+import {
+   verifyToken,
+   requireRole,
+   requireUserOwnership,
+   requireHotelOwnership,
+   requireRoomTypeOwnership,
+} from "../../../middlewares/authMiddleware.js";
+import {
+   addRoomTypeAmenitiesValidation,
+   addRoomTypeImagesValidation,
+   addRoomTypeRoomsValidation,
+   createHotelValidation,
+   createRoomTypeValidation,
+   handleValidationErrors,
+   updateHotelValidation,
+   updateRoomTypeRoomStatusValidation,
+   updateRoomTypeValidation,
+} from "../../../middlewares/validation.js";
 
 const router = Router();
 
+// Get all hotels with pagination and search
+router.get("/", getAllHotels);
+
+// Get amenities
+router.get(
+   "/amenities",
+   verifyToken,
+   requireRole(["hotel_owner", "admin"]),
+   getAmenities
+);
+
+// Get room types with filter, pagination and search
+router.get("/room-types", getAllRoomTypes);
+
 // Create a new hotel route
-router.post("/", createHotel);
+router.post(
+   "/",
+   verifyToken,
+   requireRole(["hotel_owner"]),
+   createHotelValidation,
+   handleValidationErrors,
+   createHotel
+);
 // Update hotel info
-router.put("/:hotelId", updateHotel);
-// Create a new room type for a hotel
-router.post("/:hotelId/room-types", createRoomType);
-// get room types details
-router.get("/room-types/:roomTypeId", getRoomTypesById);
-// update room type
-router.put("/room-types/:roomTypeId", updateRoomType);
-// Create a new amenity
-router.post("/amenities", createAmenity);
-// get amenities
-router.get("/amenities", getAmenities);
-// Create a new room type for a hotel
-router.post("/room-types/:roomTypeId/add-amenities", addRoomTypeAmenities);
-// Add rooms for a room type
-router.post("/room-types/:roomTypeId/rooms", addRoomTypeRooms);
-// Add room type images
-router.post("/room-types/:roomTypeId/images", addRoomTypeImages);
+router.put(
+   "/:id",
+   verifyToken,
+   requireRole(["hotel_owner"]),
+   requireHotelOwnership(["admin"]),
+   updateHotelValidation,
+   updateHotel
+);
 // Get hotel by id
-router.get("/:hotelId", getHotelById);
+router.get("/:id", getHotelById);
+// Get hotel by owner id
+router.get(
+   "/owner/:id",
+   verifyToken,
+   requireUserOwnership(["admin"]),
+   getHotelsByOwnerId
+);
+
+// Create a new room type for a hotel
+router.post(
+   "/:id/room-types",
+   verifyToken,
+   requireRole(["hotel_owner"]),
+   createRoomTypeValidation,
+   handleValidationErrors,
+   createRoomType
+);
+// Update room type
+router.put(
+   "/room-types/:id",
+   verifyToken,
+   requireRole(["hotel_owner"]),
+   requireRoomTypeOwnership(["admin"]),
+   updateRoomTypeValidation,
+   updateRoomType
+);
+// Get room type details
+router.get("/room-types/:id", getRoomTypesById);
+// Add amenities to a room type
+router.post(
+   "/room-types/:id/add-amenities",
+   verifyToken,
+   requireRole(["hotel_owner"]),
+   requireRoomTypeOwnership(["admin"]),
+   addRoomTypeAmenitiesValidation,
+   handleValidationErrors,
+   addRoomTypeAmenities
+);
+// Add rooms for a room type
+router.post(
+   "/room-types/:id/rooms",
+   verifyToken,
+   requireRole(["hotel_owner"]),
+   requireRoomTypeOwnership(["admin"]),
+   addRoomTypeRoomsValidation,
+   handleValidationErrors,
+   addRoomTypeRooms
+);
+// Add room type images
+router.post(
+   "/room-types/:id/images",
+   verifyToken,
+   requireRole(["hotel_owner"]),
+   requireRoomTypeOwnership(["admin"]),
+   addRoomTypeImagesValidation,
+   handleValidationErrors,
+   addRoomTypeImages
+);
+// Update rooms status
+router.put(
+   "/room-types/:id/rooms/:roomId",
+   verifyToken,
+   requireRole(["hotel_owner"]),
+   requireRoomTypeOwnership(["admin"]),
+   updateRoomTypeRoomStatusValidation,
+   handleValidationErrors,
+   updateRoomTypeRoomStatus
+);
+// Delete image from a room type
+router.delete(
+   "/room-types/:id/images/:imageId",
+   verifyToken,
+   requireRole(["hotel_owner"]),
+   requireRoomTypeOwnership(["admin"]),
+   deleteRoomTypeImage
+);
 
 export default router;
