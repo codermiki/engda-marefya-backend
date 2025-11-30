@@ -36,6 +36,10 @@ class UserModel {
 
       try {
          const [result] = await pool.execute(query, values);
+         if (result.affectedRows === 0) {
+            return null;
+         }
+
          return { id, ...userData };
       } catch (error) {
          if (error.code === "ER_DUP_ENTRY") {

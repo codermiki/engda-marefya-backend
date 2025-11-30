@@ -1,10 +1,80 @@
 import { HTTP_STATUS } from "../../../constants/http.js";
 import { PAGINATION } from "../../../constants/pagination.js";
+import { USER_ROLES } from "../../../constants/user.js";
 import AppError from "../../../utils/AppError.js";
+import { generateId } from "../../../utils/idGenerator.js";
+import PasswordUtils from "../../../utils/PasswordUtils.js";
 import UserModel from "../../auth/model/UserModel.js";
 import HotelModel from "../../hotels/model/HotelModel.js";
 
 export class AdminService {
+   // Create admin service
+   static async createAdmin(userData) {
+      try {
+         const {
+            user_name,
+            email,
+            password,
+            phone_number = null,
+            role = USER_ROLES.ADMIN,
+         } = userData;
+
+         // Hash password
+         const password_hash = await PasswordUtils.hashPassword(
+            password,
+            process.env.PASSWORD_SALT || 10
+         );
+         const id = generateId();
+
+         const admin = await UserModel.create({
+            id,
+            user_name,
+            email,
+            phone_number,
+            password_hash,
+            role,
+            is_email_verified: false,
+         });
+
+         if (!admin) {
+            throw new AppError(
+               "Failed to create admin. Please try again.",
+               HTTP_STATUS.INTERNAL_SERVER_ERROR
+            );
+         }
+
+         // Create token for email verification
+         const token = JWTUtils.createToken(
+            {
+               id: user.id,
+               email: user.email,
+               type: "email_verification",
+            },
+            {
+               expiresIn: "24h",
+            }
+         );
+         // Send verification email
+         await emailService.sendVerificationEmail(user.email, token);
+
+         return {
+            id: admin.id,
+            email: admin.email,
+            role: admin.role,
+         };
+      } catch (error) {
+         // Re-throw AppError instances, otherwise wrap in AppError
+         if (error instanceof AppError) {
+            throw error;
+         }
+
+         throw new AppError(
+            "Failed to create admin. Please try again.",
+            HTTP_STATUS.INTERNAL_SERVER_ERROR
+         );
+      }
+   }
+
    // Get users service with pagination
    static async getAllUsers(
       role,

@@ -4,6 +4,22 @@ import AppError from "../../../utils/AppError.js";
 import { successResponse } from "../../../utils/responseFormatter.js";
 import { AdminService } from "../service/index.js";
 
+// Create admin controller
+export const createAdmin = async (req, res, next) => {
+   try {
+      const userData = req.body;
+      const data = await AdminService.createAdmin(userData);
+
+      return successResponse(res, {
+         message: "Admin created successfully",
+         data,
+         statusCode: HTTP_STATUS.CREATED,
+      });
+   } catch (error) {
+      next(error);
+   }
+};
+
 // Get users controller
 export const getAllUsers = async (req, res, next) => {
    try {

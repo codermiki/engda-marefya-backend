@@ -18,30 +18,7 @@ export class AuthService {
             role = USER_ROLES.CUSTOMER,
          } = userData;
 
-         // Check if user already exists with email
-         const existingUserByEmail = await UserModel.findByEmail(email);
-         if (existingUserByEmail) {
-            throw new AppError(
-               "User already exists with this email",
-               HTTP_STATUS.BAD_REQUEST
-            );
-         }
-
-         // Check if user already exists with phone number
-         if (phone_number) {
-            const existingUserByPhoneNumber = await UserModel.findByPhoneNumber(
-               phone_number
-            );
-            if (existingUserByPhoneNumber) {
-               throw new AppError(
-                  "User already exists with this phone number",
-                  HTTP_STATUS.BAD_REQUEST
-               );
-            }
-         }
-
          // Hash password
-
          const password_hash = await PasswordUtils.hashPassword(
             password,
             process.env.SALT_ROUNDS || 10
@@ -61,9 +38,10 @@ export class AuthService {
             is_email_verified: false,
          });
 
+         // Create token for email verification
          const token = JWTUtils.createToken(
             {
-               userId: user.id,
+               id: user.id,
                email: user.email,
                type: "email_verification",
             },
@@ -71,10 +49,11 @@ export class AuthService {
                expiresIn: "24h",
             }
          );
+         // Send verification email
          await emailService.sendVerificationEmail(user.email, token);
 
          return {
-            user_id: user.id,
+            id: user.id,
             email: user.email,
             role: user.role,
          };
@@ -101,7 +80,7 @@ export class AuthService {
          }
 
          // Find user by ID from token
-         const user = await UserModel.findById(decoded.userId);
+         const user = await UserModel.findById(decoded.id);
          if (!user) {
             throw new AppError("User not found", HTTP_STATUS.NOT_FOUND);
          }
@@ -115,7 +94,7 @@ export class AuthService {
          }
 
          // Update user's email verification status
-         await UserModel.update(decoded.userId, {
+         await UserModel.update(decoded.id, {
             is_email_verified: true,
          });
 
@@ -183,7 +162,7 @@ export class AuthService {
          if (!user.is_email_verified) {
             const token = JWTUtils.createToken(
                {
-                  userId: user.id,
+                  id: user.id,
                   email: user.email,
                   type: "email_verification",
                },

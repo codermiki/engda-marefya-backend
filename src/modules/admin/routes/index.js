@@ -6,6 +6,7 @@ import {
    createAmenity,
    updateAmenity,
    removeAmenity,
+   createAdmin,
 } from "../controller/index.js";
 import {
    verifyToken,
@@ -13,12 +14,22 @@ import {
 } from "../../../middlewares/authMiddleware.js";
 import {
    handleValidationErrors,
+   registerValidation,
    updateAmenityValidation,
    updateUserStatusValidation,
 } from "../../../middlewares/validation.js";
 
 const router = Router();
 
+// Create admin route
+router.post(
+   "/",
+   verifyToken,
+   // requireRole(["admin"]),
+   registerValidation,
+   handleValidationErrors,
+   createAdmin
+);
 // Get users route
 router.get("/users", verifyToken, requireRole(["admin"]), getAllUsers);
 // Update user profile route
