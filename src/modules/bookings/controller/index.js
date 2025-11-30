@@ -100,3 +100,38 @@ export const getUserBookings = async (req, res, next) => {
       next(error);
    }
 };
+
+// Get hotel bookings controller
+export const getHotelBookings = async (req, res, next) => {
+   try {
+      const id = req?.params?.id;
+      const status = req?.query?.status;
+      const page = req?.query?.page;
+      const limit = req?.query?.limit;
+      if (!id) {
+         throw new AppError("Hotel id is required", HTTP_STATUS.BAD_REQUEST);
+      }
+      if (status) {
+         if (!["pending", "paid", "cancelled"].includes(status)) {
+            throw new AppError(
+               "Invalid status. Status must be 'pending', 'paid', or 'cancelled'",
+               HTTP_STATUS.BAD_REQUEST
+            );
+         }
+      }
+      const { bookings, pagination } = await BookingService.getHotelBookings(
+         id,
+         status,
+         page,
+         limit
+      );
+
+      return successResponse(res, {
+         message: "Hotel bookings retrieved successfully",
+         data: { bookings, pagination },
+         statusCode: HTTP_STATUS.OK,
+      });
+   } catch (error) {
+      next(error);
+   }
+};

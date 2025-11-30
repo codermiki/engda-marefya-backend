@@ -271,6 +271,91 @@ class BookingModel {
          );
       }
    }
+
+   // Get hotel bookings
+   static async getHotelBookings(id, status, page, limit) {
+      let values = [id];
+      let query = `SELECT
+         b.id,
+         b.booking_reference,
+         b.check_in,
+         b.check_out,
+         b.actual_check_out,
+         b.status,
+         b.total_amount,
+         b.created_at,
+         b.updated_at,
+         r.id AS room_id,
+         r.room_number,
+         rt.id AS room_type_id,
+         rt.name AS room_type_name,
+         rt.price_per_night,
+         h.id AS hotel_id,
+         h.name AS hotel_name,
+         h.location AS hotel_location,
+         u.id AS user_id,
+         u.user_name,
+         u.email
+      FROM
+         bookings b
+      JOIN
+         rooms r ON b.room_id = r.id
+      JOIN
+         room_types rt ON r.room_type_id = rt.id
+      JOIN
+         hotels h ON rt.hotel_id = h.id
+      JOIN
+         users u ON b.user_id = u.id
+      WHERE
+         h.id = ?`;
+      if (status) {
+         query += ` AND b.status = ?`;
+         values.push(status);
+      }
+      const offset = (page - 1) * limit;
+
+      query += ` LIMIT ${Number(limit)} OFFSET ${Number(offset)}`;
+
+      try {
+         const [rows] = await pool.execute(query, values);
+
+         if (rows.length === 0) {
+            return null;
+         }
+
+         return rows;
+      } catch (error) {
+         console.log(error);
+         throw new AppError(
+            "Error fetching hotel bookings",
+            HTTP_STATUS.INTERNAL_SERVER_ERROR
+         );
+      }
+   }
+
+   // Count hotel bookings
+   static async countHotelBookings(id, status) {
+      let values = [id];
+      let query = `SELECT COUNT(*) AS count FROM bookings b JOIN rooms r ON b.room_id = r.id JOIN room_types rt ON r.room_type_id = rt.id JOIN hotels h ON rt.hotel_id = h.id WHERE h.id = ?`;
+      if (status) {
+         query += ` AND b.status = ?`;
+         values.push(status);
+      }
+      try {
+         const [rows] = await pool.execute(query, values);
+         if (rows.length === 0) {
+            return 0;
+         }
+
+         return rows[0].count;
+      } catch (error) {
+         console.log(error);
+         throw new AppError(
+            "Error counting hotel bookings",
+            HTTP_STATUS.INTERNAL_SERVER_ERROR
+         );
+      }
+   }
 }
 
 export default BookingModel;

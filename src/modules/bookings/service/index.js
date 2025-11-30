@@ -132,4 +132,55 @@ export class BookingService {
          );
       }
    }
+
+   // Get hotel bookings service with pagination
+   static async getHotelBookings(
+      id,
+      status,
+      page = PAGINATION.DEFAULT_PAGE,
+      limit = PAGINATION.DEFAULT_LIMIT
+   ) {
+      try {
+         const totalBookings = await BookingModel.countHotelBookings(
+            id,
+            status
+         );
+         const totalPages = Math.ceil(totalBookings / limit);
+         // page should not exceed total pages
+         if (page > totalPages) {
+            throw new AppError("Page not found.", HTTP_STATUS.NOT_FOUND);
+         }
+
+         const bookings = await BookingModel.getHotelBookings(
+            id,
+            status,
+            page,
+            limit
+         );
+
+         if (!bookings) {
+            throw new AppError("Hotel not found.", HTTP_STATUS.NOT_FOUND);
+         }
+
+         // prepare pagination
+         const pagination = {
+            page,
+            limit,
+            total: totalBookings,
+            total_pages: totalPages,
+         };
+
+         return { bookings, pagination };
+      } catch (error) {
+         // Re-throw AppError instances, otherwise wrap in AppError
+         if (error instanceof AppError) {
+            throw error;
+         }
+
+         throw new AppError(
+            "Failed to get hotel bookings. Please try again.",
+            HTTP_STATUS.INTERNAL_SERVER_ERROR
+         );
+      }
+   }
 }

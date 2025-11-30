@@ -4,6 +4,7 @@ import {
    getBookingDetails,
    cancelBooking,
    getUserBookings,
+   getHotelBookings,
 } from "../controller/index.js";
 import { verifyToken } from "../../../middlewares/authMiddleware.js";
 import {
@@ -30,5 +31,8 @@ router.post("/:id/cancel", verifyToken, cancelBooking);
 
 // Get user bookings
 router.get("/user/:id", verifyToken, getUserBookings);
+
+// Get hotel bookings
+router.get("/hotel/:id", verifyToken, getHotelBookings);
 
 export default router;
