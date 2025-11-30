@@ -4,13 +4,18 @@ import {
    updateUserStatus,
    removeUser,
    createAmenity,
-   // updateAmenity,
-   // removeAmenity,
+   updateAmenity,
+   removeAmenity,
 } from "../controller/index.js";
 import {
    verifyToken,
    requireRole,
 } from "../../../middlewares/authMiddleware.js";
+import {
+   handleValidationErrors,
+   updateAmenityValidation,
+   updateUserStatusValidation,
+} from "../../../middlewares/validation.js";
 
 const router = Router();
 
@@ -18,9 +23,11 @@ const router = Router();
 router.get("/users", verifyToken, requireRole(["admin"]), getUsers);
 // Update user profile route
 router.put(
-   "/users/:id/:status",
+   "/users/:id/status",
    verifyToken,
    requireRole(["admin"]),
+   updateUserStatusValidation,
+   handleValidationErrors,
    updateUserStatus
 );
 // Remove user route
@@ -28,18 +35,19 @@ router.delete("/users/:id", verifyToken, requireRole(["admin"]), removeUser);
 // Create a new amenity
 router.post("/amenities", verifyToken, requireRole(["admin"]), createAmenity);
 // Update amenity
-// router.put(
-//    "/amenities/:id",
-//    verifyToken,
-//    requireRole(["admin"]),
-//    updateAmenity
-// );
-// // Remove amenity
-// router.delete(
-//    "/amenities/:id",
-//    verifyToken,
-//    requireRole(["admin"]),
-//    removeAmenity
-// );
+router.put(
+   "/amenities/:id",
+   verifyToken,
+   requireRole(["admin"]),
+   updateAmenityValidation,
+   updateAmenity
+);
+// Remove amenity
+router.delete(
+   "/amenities/:id",
+   verifyToken,
+   requireRole(["admin"]),
+   removeAmenity
+);
 
 export default router;

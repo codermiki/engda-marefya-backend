@@ -153,3 +153,26 @@ export const addRoomTypeImagesValidation = [
 export const updateRoomTypeRoomStatusValidation = [
    body("status").notEmpty().withMessage("Status is required"),
 ];
+
+// Update user status validation
+export const updateUserStatusValidation = [
+   body("status").notEmpty().withMessage("Status is required"),
+];
+
+// Update amenity validation all fields are optional but one field is required to update
+export const updateAmenityValidation = (req, res, next) => {
+   const updateData = req.body;
+   if (!updateData) {
+      throw new AppError(
+         "At least one field is required",
+         HTTP_STATUS.BAD_REQUEST
+      );
+   }
+   if (Object.keys(updateData).length === 0) {
+      throw new AppError(
+         "At least one field is required",
+         HTTP_STATUS.BAD_REQUEST
+      );
+   }
+   next();
+};

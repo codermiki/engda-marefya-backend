@@ -737,6 +737,77 @@ class HotelModel {
          );
       }
    }
+
+   // Update amenities
+   static async updateAmenity(id, updateData) {
+      const allowedFields = ["name", "icon_url"];
+
+      const setClause = [];
+      const values = [];
+
+      allowedFields.forEach((field) => {
+         if (updateData[field] !== undefined) {
+            setClause.push(`${field} = ?`);
+            values.push(updateData[field]);
+         }
+      });
+
+      if (setClause.length === 0) {
+         throw new AppError(
+            "No valid fields to update",
+            HTTP_STATUS.BAD_REQUEST
+         );
+      }
+
+      setClause.push("updated_at = CURRENT_TIMESTAMP");
+      values.push(id);
+
+      const query = `UPDATE amenities SET ${setClause.join(", ")} WHERE id = ?`;
+
+      try {
+         const [result] = await pool.execute(query, values);
+         if (result.affectedRows === 0) {
+            return null;
+         }
+
+         return {
+            id,
+            ...updateData,
+         };
+      } catch (error) {
+         if (error instanceof AppError) {
+            throw error;
+         }
+
+         throw new AppError(
+            "Failed to update amenities. Please try again.",
+            HTTP_STATUS.INTERNAL_SERVER_ERROR
+         );
+      }
+   }
+
+   // Delete amenities
+   static async removeAmenity(id) {
+      const query = `DELETE FROM amenities WHERE id = ?`;
+
+      try {
+         const [result] = await pool.execute(query, [id]);
+         if (result.affectedRows === 0) {
+            return null;
+         }
+
+         return id;
+      } catch (error) {
+         if (error instanceof AppError) {
+            throw error;
+         }
+
+         throw new AppError(
+            "Failed to delete amenities. Please try again.",
+            HTTP_STATUS.INTERNAL_SERVER_ERROR
+         );
+      }
+   }
 }
 
 export default HotelModel;

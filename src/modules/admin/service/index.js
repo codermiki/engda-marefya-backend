@@ -153,4 +153,46 @@ export class AdminService {
          );
       }
    }
+
+   static async updateAmenity(id, updateData) {
+      try {
+         const updatedAmenity = await HotelModel.updateAmenity(id, updateData);
+         if (!updatedAmenity) {
+            throw new AppError("Amenity not found", HTTP_STATUS.NOT_FOUND);
+         }
+
+         return updatedAmenity;
+      } catch (error) {
+         // Re-throw AppError instances, otherwise wrap in AppError
+         if (error instanceof AppError) {
+            throw error;
+         }
+
+         throw new AppError(
+            "Failed to update Amenities. Please try again.",
+            HTTP_STATUS.INTERNAL_SERVER_ERROR
+         );
+      }
+   }
+
+   static async removeAmenity(id) {
+      try {
+         const removedAmenity = await HotelModel.removeAmenity(id);
+         if (!removedAmenity) {
+            throw new AppError("Amenity not found", HTTP_STATUS.NOT_FOUND);
+         }
+
+         return removedAmenity;
+      } catch (error) {
+         // Re-throw AppError instances, otherwise wrap in AppError
+         if (error instanceof AppError) {
+            throw error;
+         }
+
+         throw new AppError(
+            "Failed to remove Amenities. Please try again.",
+            HTTP_STATUS.INTERNAL_SERVER_ERROR
+         );
+      }
+   }
 }

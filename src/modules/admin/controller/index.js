@@ -31,7 +31,7 @@ export const getUsers = async (req, res, next) => {
 export const updateUserStatus = async (req, res, next) => {
    try {
       const id = req.params?.id;
-      const status = req.params?.status;
+      const { status } = req.body;
 
       if (!id) {
          throw new AppError("User id is required", HTTP_STATUS.BAD_REQUEST);
@@ -104,6 +104,55 @@ export const createAmenity = async (req, res, next) => {
          message: "Amenities created successfully",
          data,
          statusCode: HTTP_STATUS.CREATED,
+      });
+   } catch (error) {
+      next(error);
+   }
+};
+
+// Update amenities controller
+export const updateAmenity = async (req, res, next) => {
+   try {
+      const id = req.params?.id;
+      const updateData = req.body;
+
+      if (!id) {
+         throw new AppError(
+            "Amenities id is required",
+            HTTP_STATUS.BAD_REQUEST
+         );
+      }
+
+      const data = await AdminService.updateAmenity(id, updateData);
+
+      return successResponse(res, {
+         message: "Amenities updated successfully",
+         data,
+         statusCode: HTTP_STATUS.OK,
+      });
+   } catch (error) {
+      next(error);
+   }
+};
+
+// Remove amenities controller
+export const removeAmenity = async (req, res, next) => {
+   try {
+      const id = req.params?.id;
+
+      if (!id) {
+         throw new AppError(
+            "Amenities id is required",
+            HTTP_STATUS.BAD_REQUEST
+         );
+      }
+
+      const data = await AdminService.removeAmenity(id);
+
+      return successResponse(res, {
+         message: "Amenities removed successfully",
+         data,
+         statusCode: HTTP_STATUS.OK,
       });
    } catch (error) {
       next(error);
