@@ -1,6 +1,6 @@
 import { Router } from "express";
 import {
-   getUsers,
+   getAllUsers,
    updateUserStatus,
    removeUser,
    createAmenity,
@@ -20,7 +20,7 @@ import {
 const router = Router();
 
 // Get users route
-router.get("/users", verifyToken, requireRole(["admin"]), getUsers);
+router.get("/users", verifyToken, requireRole(["admin"]), getAllUsers);
 // Update user profile route
 router.put(
    "/users/:id/status",

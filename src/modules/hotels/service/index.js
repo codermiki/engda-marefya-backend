@@ -1,4 +1,5 @@
 import { HTTP_STATUS } from "../../../constants/http.js";
+import { PAGINATION } from "../../../constants/pagination.js";
 import AppError from "../../../utils/AppError.js";
 import { generateId } from "../../../utils/idGenerator.js";
 import HotelModel from "../model/HotelModel.js";
@@ -499,34 +500,35 @@ export class HotelService {
    }
 
    // Get all hotels with pagination and search
-   static async getAllHotels(query) {
+   static async getAllHotels(
+      search = "",
+      page = PAGINATION.DEFAULT_PAGE,
+      limit = PAGINATION.DEFAULT_LIMIT
+   ) {
       try {
-         const count = await HotelModel.countAllHotels({
-            search: query?.search,
-         });
-         if (count === 0) {
+         const totalHotels = await HotelModel.countAllHotels(search);
+         const totalPages = Math.ceil(totalHotels / limit);
+
+         if (totalHotels === 0) {
             throw new AppError("Hotels not found.", HTTP_STATUS.NOT_FOUND);
          }
 
-         const hotels = await HotelModel.getAllHotels({
-            page: query?.page,
-            limit: query?.limit,
-            search: query?.search,
-         });
-
-         let meta = {};
-         // prepare meta information
-         if (query?.page && query?.limit) {
-            meta.page = query?.page;
-            meta.limit = query?.limit;
-            meta.total = count;
-         } else {
-            meta.page = parseInt(1, 10);
-            meta.limit = parseInt(count, 10);
-            meta.total = parseInt(count, 10);
+         // page should not exced from the totalPages
+         if (page > totalPages) {
+            throw new AppError("Page not found.", HTTP_STATUS.NOT_FOUND);
          }
 
-         return { hotels, meta };
+         const hotels = await HotelModel.getAllHotels(search, page, limit);
+
+         // prepare pagination
+         const pagination = {
+            page,
+            limit,
+            total: totalHotels,
+            total_pages: totalPages,
+         };
+
+         return { hotels, pagination };
       } catch (error) {
          if (error instanceof AppError) {
             throw error;
@@ -540,32 +542,53 @@ export class HotelService {
    }
 
    // Get all room types with filter, pagination and search
-   static async getAllRoomTypes(query) {
+   static async getAllRoomTypes(
+      search = "",
+      minPrice,
+      maxPrice,
+      bedType,
+      numberOfBeds,
+      page = PAGINATION.DEFAULT_PAGE,
+      limit = PAGINATION.DEFAULT_LIMIT
+   ) {
       try {
-         const count = await HotelModel.countAllRoomTypes({
-            ...query,
-         });
-         if (count === 0) {
+         const totalRoomTypes = await HotelModel.countAllRoomTypes(
+            search,
+            minPrice,
+            maxPrice,
+            bedType,
+            numberOfBeds
+         );
+         const totalPages = Math.ceil(totalRoomTypes / limit);
+
+         if (totalRoomTypes === 0) {
             throw new AppError("Room types not found.", HTTP_STATUS.NOT_FOUND);
          }
 
-         const roomTypes = await HotelModel.getAllRoomTypes({
-            ...query,
-         });
-
-         let meta = {};
-         // prepare meta information
-         if (query?.page && query?.limit) {
-            meta.page = query?.page;
-            meta.limit = query?.limit;
-            meta.total = count;
-         } else {
-            meta.page = parseInt(1, 10);
-            meta.limit = parseInt(count, 10);
-            meta.total = parseInt(count, 10);
+         // page should not exced from the totalPages
+         if (page > totalPages) {
+            throw new AppError("Page not found.", HTTP_STATUS.NOT_FOUND);
          }
 
-         return { roomTypes, meta };
+         const roomTypes = await HotelModel.getAllRoomTypes(
+            search,
+            minPrice,
+            maxPrice,
+            bedType,
+            numberOfBeds,
+            page,
+            limit
+         );
+
+         // prepare pagination
+         const pagination = {
+            page,
+            limit,
+            total: totalRoomTypes,
+            total_pages: totalPages,
+         };
+
+         return { roomTypes, pagination };
       } catch (error) {
          if (error instanceof AppError) {
             throw error;

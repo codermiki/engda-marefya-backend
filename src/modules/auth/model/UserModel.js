@@ -104,11 +104,10 @@ class UserModel {
    }
 
    // find users with filters
-   static async findAll(filters = {}, options = {}) {
+   static async getAllUsers(filters = {}, { page, limit }) {
+      const offset = (page - 1) * limit;
       let query = "SELECT * FROM users";
       const conditions = [];
-      const page = options?.page;
-      const limit = options?.limit;
       const values = [];
       // Apply filters
       for (const key in filters) {
@@ -119,15 +118,11 @@ class UserModel {
          query += " WHERE " + conditions.join(" AND ");
       }
       // Apply pagination
-      if (page && limit) {
-         const parsedLimit = parseInt(limit, 10);
-         const parsedPage = parseInt(page - 1, 10);
-         const parsedOffset = parsedPage * parsedLimit;
-         query += ` LIMIT ${parsedLimit} OFFSET ${parsedOffset}`;
-      }
+      query += ` LIMIT ${Number(limit)} OFFSET ${Number(offset)}`;
 
       try {
          const [rows] = await pool.execute(query, values);
+
          return rows;
       } catch (error) {
          throw new AppError(
@@ -138,7 +133,7 @@ class UserModel {
    }
 
    // Count users with filters
-   static async countAll(filters = {}) {
+   static async countAllUsers(filters = {}) {
       let query = "SELECT COUNT(*) as count FROM users";
       const conditions = [];
       const values = [];

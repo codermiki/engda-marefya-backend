@@ -1,10 +1,17 @@
 import { HTTP_STATUS } from "../../../constants/http.js";
+import { PAGINATION } from "../../../constants/pagination.js";
 import AppError from "../../../utils/AppError.js";
 import UserModel from "../../auth/model/UserModel.js";
 import HotelModel from "../../hotels/model/HotelModel.js";
 
 export class AdminService {
-   static async getUsers(role, status, page, limit) {
+   // Get users service with pagination
+   static async getAllUsers(
+      role,
+      status,
+      page = PAGINATION.DEFAULT_PAGE,
+      limit = PAGINATION.DEFAULT_LIMIT
+   ) {
       try {
          const filters = {};
          if (role) {
@@ -15,8 +22,17 @@ export class AdminService {
          }
 
          // Get total users count and users data
-         const totalUsers = await UserModel.countAll(filters);
-         const usersData = await UserModel.findAll(filters, { page, limit });
+         const totalUsers = await UserModel.countAllUsers(filters);
+         const totalPages = Math.ceil(totalUsers / limit);
+         // page should not exceed total pages
+         if (page > totalPages) {
+            throw new AppError("Page not found.", HTTP_STATUS.NOT_FOUND);
+         }
+
+         const usersData = await UserModel.getAllUsers(filters, {
+            page,
+            limit,
+         });
 
          // prepare users data to return only necessary fields
          const users = usersData.map((user) => ({
@@ -31,19 +47,16 @@ export class AdminService {
             created_at: user.created_at,
             updated_at: user.updated_at,
          }));
-         let meta = {};
-         // prepare meta information
-         if (page && limit) {
-            meta.page = page;
-            meta.limit = limit;
-            meta.total = totalUsers;
-         } else {
-            meta.page = parseInt(1, 10);
-            meta.limit = parseInt(totalUsers, 10);
-            meta.total = parseInt(totalUsers, 10);
-         }
 
-         return { users, meta };
+         // prepare pagination
+         const pagination = {
+            page,
+            limit,
+            total: totalUsers,
+            total_pages: totalPages,
+         };
+
+         return { users, pagination };
       } catch (error) {
          // Re-throw AppError instances, otherwise wrap in AppError
          if (error instanceof AppError) {
@@ -57,6 +70,7 @@ export class AdminService {
       }
    }
 
+   // Update user status service
    static async updateUserStatus(id, status) {
       try {
          const user = await UserModel.findById(id);
@@ -90,6 +104,7 @@ export class AdminService {
       }
    }
 
+   // Remove user service
    static async removeUser(id) {
       try {
          const user = await UserModel.findById(id);
@@ -123,6 +138,7 @@ export class AdminService {
       }
    }
 
+   // Create amenity service
    static async createAmenity({ name, icon_url }) {
       try {
          // Generate Object Id
@@ -154,6 +170,7 @@ export class AdminService {
       }
    }
 
+   // Update amenity service
    static async updateAmenity(id, updateData) {
       try {
          const updatedAmenity = await HotelModel.updateAmenity(id, updateData);
@@ -175,6 +192,7 @@ export class AdminService {
       }
    }
 
+   // Remove amenity service
    static async removeAmenity(id) {
       try {
          const removedAmenity = await HotelModel.removeAmenity(id);

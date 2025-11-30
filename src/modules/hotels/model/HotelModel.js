@@ -550,7 +550,7 @@ class HotelModel {
    }
 
    // Get all hotels
-   static async getAllHotels({ page = 1, limit = 10, search = "" }) {
+   static async getAllHotels(search, page, limit) {
       const offset = (page - 1) * limit;
 
       let query = `
@@ -584,7 +584,7 @@ class HotelModel {
    }
 
    // Count all hotels with search
-   static async countAllHotels({ search = "" }) {
+   static async countAllHotels(search) {
       let query = `SELECT COUNT(*) as count FROM hotels`;
       const values = [];
 
@@ -610,15 +610,15 @@ class HotelModel {
    }
 
    // Get all room types with filter, pagination and search
-   static async getAllRoomTypes({
-      search = "",
+   static async getAllRoomTypes(
+      search,
       minPrice,
       maxPrice,
       bedType,
       numberOfBeds,
-      limit = 10,
-      page = 1,
-   }) {
+      page,
+      limit
+   ) {
       const offset = (page - 1) * limit;
       let query = `
          SELECT rt.*, h.name AS hotel_name, h.location AS hotel_location
@@ -675,13 +675,13 @@ class HotelModel {
    }
 
    // Count all room types with filter, pagination and search
-   static async countAllRoomTypes({
-      search = "",
+   static async countAllRoomTypes(
+      search,
       minPrice,
       maxPrice,
       bedType,
-      numberOfBeds,
-   }) {
+      numberOfBeds
+   ) {
       let query = `
          SELECT COUNT(*) AS count
          FROM room_types rt

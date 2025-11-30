@@ -173,6 +173,104 @@ class BookingModel {
          );
       }
    }
+
+   // Cancel booking
+   static async cancelBooking(id) {
+      const query = `UPDATE bookings SET status = 'cancelled' WHERE id = ?`;
+
+      try {
+         const [result] = await pool.execute(query, [id]);
+
+         if (result.affectedRows === 0) {
+            return null;
+         }
+
+         return { id };
+      } catch (error) {
+         console.log(error);
+         throw new AppError(
+            "Error cancelling booking",
+            HTTP_STATUS.INTERNAL_SERVER_ERROR
+         );
+      }
+   }
+
+   // Get user bookings with pagination
+   static async getUserBookings(id, status, page, limit) {
+      let values = [id];
+      let query = `
+         SELECT
+            b.id,
+            b.booking_reference,
+            h.name AS hotel_name,
+            rt.name AS room_type,
+            r.room_number,
+            b.check_in,
+            b.check_out,
+            b.status,
+            b.total_amount,
+            b.created_at,
+            b.updated_at
+         FROM
+            bookings b
+         JOIN
+            rooms r ON b.room_id = r.id
+         JOIN
+            room_types rt ON r.room_type_id = rt.id
+         JOIN
+            hotels h ON rt.hotel_id = h.id
+         JOIN
+            users u ON b.user_id = u.id
+         WHERE
+            b.user_id = ?`;
+      if (status) {
+         query += ` AND b.status = ?`;
+         values.push(status);
+      }
+      const offset = (page - 1) * limit;
+
+      query += ` LIMIT ${Number(limit)} OFFSET ${Number(offset)}`;
+
+      try {
+         const [rows] = await pool.execute(query, values);
+
+         if (rows.length === 0) {
+            return null;
+         }
+
+         return rows;
+      } catch (error) {
+         console.log(error);
+         throw new AppError(
+            "Error fetching user bookings",
+            HTTP_STATUS.INTERNAL_SERVER_ERROR
+         );
+      }
+   }
+
+   // Count user bookings
+   static async countUserBookings(id, status) {
+      let values = [id];
+      let query = `SELECT COUNT(*) AS count FROM bookings WHERE user_id = ?`;
+      if (status) {
+         query += ` AND status = ?`;
+         values.push(status);
+      }
+      try {
+         const [rows] = await pool.execute(query, values);
+         if (rows.length === 0) {
+            return 0;
+         }
+
+         return rows[0].count;
+      } catch (error) {
+         console.log(error);
+         throw new AppError(
+            "Error counting user bookings",
+            HTTP_STATUS.INTERNAL_SERVER_ERROR
+         );
+      }
+   }
 }
 
 export default BookingModel;

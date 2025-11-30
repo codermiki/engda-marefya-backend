@@ -1,5 +1,10 @@
 import { Router } from "express";
-import { createBooking, getBookingDetails } from "../controller/index.js";
+import {
+   createBooking,
+   getBookingDetails,
+   cancelBooking,
+   getUserBookings,
+} from "../controller/index.js";
 import { verifyToken } from "../../../middlewares/authMiddleware.js";
 import {
    createBookingValidation,
@@ -19,5 +24,11 @@ router.post(
 
 // Get booking details
 router.get("/:id", verifyToken, getBookingDetails);
+
+// Cancel booking
+router.post("/:id/cancel", verifyToken, cancelBooking);
+
+// Get user bookings
+router.get("/user/:id", verifyToken, getUserBookings);
 
 export default router;

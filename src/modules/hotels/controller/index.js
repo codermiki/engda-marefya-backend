@@ -72,7 +72,7 @@ export const updateHotel = async (req, res, next) => {
 // Create a new room type for a hotel
 export const createRoomType = async (req, res, next) => {
    try {
-      const { id } = req.params;
+      const id = req?.params?.id;
       const {
          name,
          description,
@@ -81,6 +81,10 @@ export const createRoomType = async (req, res, next) => {
          bed_type,
          number_of_beds,
       } = req.body;
+
+      if (!id) {
+         throw new AppError("Hotel ID is required", HTTP_STATUS.BAD_REQUEST);
+      }
 
       const data = await HotelService.createRoomType({
          hotelId: id,
@@ -321,11 +325,19 @@ export const deleteRoomTypeImage = async (req, res, next) => {
 // Get all hotels with pagination and search
 export const getAllHotels = async (req, res, next) => {
    try {
-      const data = await HotelService.getAllHotels(req?.query);
+      const search = req?.query?.search;
+      const page = req?.query?.page;
+      const limit = req?.query?.limit;
+
+      const { hotels, pagination } = await HotelService.getAllHotels(
+         search,
+         page,
+         limit
+      );
 
       return successResponse(res, {
          message: "Hotels fetched successfully",
-         data: { hotels: data.hotels, pagination: data.meta },
+         data: { hotels, pagination },
          statusCode: HTTP_STATUS.OK,
       });
    } catch (error) {
@@ -336,11 +348,27 @@ export const getAllHotels = async (req, res, next) => {
 // Get all room types with filter, pagination and search
 export const getAllRoomTypes = async (req, res, next) => {
    try {
-      const data = await HotelService.getAllRoomTypes(req?.query);
+      const search = req?.query?.search;
+      const minPrice = req?.query?.minPrice;
+      const maxPrice = req?.query?.maxPrice;
+      const bedType = req?.query?.bedType;
+      const numberOfBeds = req?.query?.numberOfBeds;
+      const page = req?.query?.page;
+      const limit = req?.query?.limit;
+
+      const { roomTypes, pagination } = await HotelService.getAllRoomTypes(
+         search,
+         minPrice,
+         maxPrice,
+         bedType,
+         numberOfBeds,
+         page,
+         limit
+      );
 
       return successResponse(res, {
          message: "Room types fetched successfully",
-         data: { roomTypes: data.roomTypes, pagination: data.meta },
+         data: { roomTypes, pagination },
          statusCode: HTTP_STATUS.OK,
       });
    } catch (error) {

@@ -5,21 +5,23 @@ import { successResponse } from "../../../utils/responseFormatter.js";
 import { AdminService } from "../service/index.js";
 
 // Get users controller
-export const getUsers = async (req, res, next) => {
+export const getAllUsers = async (req, res, next) => {
    try {
-      // optional Query Parameters: role=customer, status=active, page=1, limit=50
-      const { role = null, status = null, page = 1, limit = 50 } = req.query;
+      const role = req?.query?.role;
+      const status = req?.query?.status;
+      const page = req?.query?.page;
+      const limit = req?.query?.limit;
 
-      const data = await AdminService.getUsers(
+      const { users, pagination } = await AdminService.getAllUsers(
          role,
          status,
-         parseInt(page, 10),
-         parseInt(limit, 10)
+         page,
+         limit
       );
 
       return successResponse(res, {
          message: "Success",
-         data: { users: data.users, pagination: data.meta },
+         data: { users, pagination },
          statusCode: HTTP_STATUS.OK,
       });
    } catch (error) {
