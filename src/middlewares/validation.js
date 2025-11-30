@@ -176,3 +176,10 @@ export const updateAmenityValidation = (req, res, next) => {
    }
    next();
 };
+
+// Create booking validation
+export const createBookingValidation = [
+   body("room_id").notEmpty().withMessage("Room id is required"),
+   body("check_in").notEmpty().withMessage("Check in date is required"),
+   body("check_out").notEmpty().withMessage("Check out date is required"),
+];

@@ -10,6 +10,7 @@ import authRoutes from "./modules/auth/routes/index.js";
 import usersRoutes from "./modules/users/routes/index.js";
 import adminRoutes from "./modules/admin/routes/index.js";
 import hotelsRoutes from "./modules/hotels/routes/index.js";
+import bookingsRoutes from "./modules/bookings/routes/index.js";
 import { logger } from "./utils/logger.js";
 import { HotelService } from "./modules/hotels/service/index.js";
 import { UserService } from "./modules/users/service/index.js";
@@ -40,6 +41,7 @@ app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/users", usersRoutes);
 app.use("/api/v1/admin", adminRoutes);
 app.use("/api/v1/hotels", hotelsRoutes);
+app.use("/api/v1/bookings", bookingsRoutes);
 
 // ====== 404 Fallback ======
 app.use((req, res) => {
