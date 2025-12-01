@@ -19,16 +19,19 @@ export const handleValidationErrors = (req, res, next) => {
 
 // Register validation
 export const registerValidation = [
-   body("user_name")
+   body("first_name")
       .notEmpty()
-      .withMessage("User name is required")
+      .withMessage("First name is required")
       .isLength({ min: 2, max: 100 })
-      .withMessage("User name must be between 2 and 100 characters"),
+      .withMessage("First name must be between 2 and 100 characters"),
 
-   body("email")
-      .isEmail()
-      .withMessage("Valid email is required")
-      .normalizeEmail(),
+   body("last_name")
+      .notEmpty()
+      .withMessage("Last name is required")
+      .isLength({ min: 2, max: 100 })
+      .withMessage("Last name must be between 2 and 100 characters"),
+
+   body("email").isEmail().withMessage("Valid email is required"),
 
    body("password")
       .isLength({ min: 6 })
@@ -39,17 +42,13 @@ export const registerValidation = [
       ),
 
    body("phone_number")
-      .optional()
       .isMobilePhone()
       .withMessage("Valid phone number is required"),
 ];
 
 // Login validation
 export const loginValidation = [
-   body("email")
-      .isEmail()
-      .withMessage("Valid email is required")
-      .normalizeEmail(),
+   body("email").isEmail().withMessage("Valid email is required"),
 
    body("password").notEmpty().withMessage("Password is required"),
 ];

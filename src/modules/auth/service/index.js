@@ -11,7 +11,8 @@ export class AuthService {
    static async registerUser(userData) {
       try {
          const {
-            user_name,
+            first_name,
+            last_name,
             email,
             password,
             phone_number = null,
@@ -29,7 +30,8 @@ export class AuthService {
          // Create user
          const user = await UserModel.create({
             id,
-            user_name,
+            first_name,
+            last_name,
             email,
             phone_number,
             password_hash,
@@ -54,7 +56,10 @@ export class AuthService {
 
          return {
             id: user.id,
+            first_name: user.first_name,
+            last_name: user.last_name,
             email: user.email,
+            phone_number: user.phone_number,
             role: user.role,
          };
       } catch (error) {
@@ -99,10 +104,13 @@ export class AuthService {
          });
 
          // Send welcome email
-         await emailService.sendWelcomeEmail(user.email, user.user_name);
+         await emailService.sendWelcomeEmail(
+            user.email,
+            `${user.first_name} ${user.last_name}`
+         );
 
          return {
-            user_id: user.id,
+            id: user.id,
             email: user.email,
             is_email_verified: true,
          };
@@ -191,7 +199,8 @@ export class AuthService {
          // Prepare user data for response (exclude sensitive fields)
          const userResponse = {
             id: user.id,
-            user_name: user.user_name,
+            first_name: user.first_name,
+            last_name: user.last_name,
             email: user.email,
             phone_number: user.phone_number,
             role: user.role,

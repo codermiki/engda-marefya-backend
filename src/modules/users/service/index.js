@@ -12,7 +12,8 @@ export class UserService {
 
          return {
             id: user.id,
-            user_name: user.user_name,
+            first_name: user.first_name,
+            last_name: user.last_name,
             email: user.email,
             phone_number: user.phone_number,
             profile_pic_url: user.profile_pic_url,
@@ -42,19 +43,14 @@ export class UserService {
             throw new AppError("User not found", HTTP_STATUS.NOT_FOUND);
          }
          const updatedUser = await UserModel.update(id, userData);
+         if (!updatedUser) {
+            throw new AppError(
+               "Failed to update user profile",
+               HTTP_STATUS.BAD_REQUEST
+            );
+         }
 
-         return {
-            id: updatedUser.id,
-            user_name: updatedUser.user_name,
-            email: updatedUser.email,
-            phone_number: updatedUser.phone_number,
-            profile_pic_url: updatedUser.profile_pic_url,
-            role: updatedUser.role,
-            status: updatedUser.status,
-            is_email_verified: updatedUser.is_email_verified,
-            created_at: updatedUser.created_at,
-            updated_at: updatedUser.updated_at,
-         };
+         return updatedUser;
       } catch (error) {
          // Re-throw AppError instances, otherwise wrap in AppError
          if (error instanceof AppError) {

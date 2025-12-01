@@ -63,7 +63,8 @@ class BookingModel {
             h.name AS hotel_name,
             h.location AS hotel_location,
             u.id AS user_id,
-            u.user_name,
+            u.first_name,
+            u.last_name,
             u.email
          FROM
             bookings b
@@ -117,7 +118,8 @@ class BookingModel {
             },
             user: {
                id: booking.user_id,
-               user_name: booking.user_name,
+               first_name: booking.first_name,
+               last_name: booking.last_name,
                email: booking.email,
             },
             check_in: booking.check_in,
@@ -294,7 +296,8 @@ class BookingModel {
          h.name AS hotel_name,
          h.location AS hotel_location,
          u.id AS user_id,
-         u.user_name,
+         u.first_name,
+         u.last_name,
          u.email
       FROM
          bookings b

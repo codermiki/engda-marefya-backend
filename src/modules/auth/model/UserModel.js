@@ -7,7 +7,8 @@ class UserModel {
    static async create(userData) {
       const {
          id,
-         user_name,
+         first_name,
+         last_name,
          email,
          phone_number = null,
          password_hash,
@@ -18,13 +19,14 @@ class UserModel {
       } = userData;
 
       const query = `
-      INSERT INTO users (id, user_name, email, phone_number, password_hash, profile_pic_url, role, status, is_email_verified)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO users (id, first_name, last_name, email, phone_number, password_hash, profile_pic_url, role, status, is_email_verified)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
 
       const values = [
          id,
-         user_name,
+         first_name,
+         last_name,
          email,
          phone_number,
          password_hash,
@@ -163,7 +165,8 @@ class UserModel {
    // Update user
    static async update(id, updateData) {
       const allowedFields = [
-         "user_name",
+         "first_name",
+         "last_name",
          "phone_number",
          "profile_pic_url",
          "password_hash",
@@ -198,11 +201,14 @@ class UserModel {
          const [result] = await pool.execute(query, values);
 
          if (result.affectedRows === 0) {
-            throw new AppError("User not found", HTTP_STATUS.NOT_FOUND);
+            return null;
          }
 
-         // Return updated user
-         return await this.findById(id);
+         // Return updated user data
+         return {
+            id,
+            ...updateData,
+         };
       } catch (error) {
          if (error.code === "ER_DUP_ENTRY") {
             if (error.message.includes("phone_number")) {
@@ -228,10 +234,10 @@ class UserModel {
          const [result] = await pool.execute(query, [id]);
 
          if (result.affectedRows === 0) {
-            throw new AppError("User not found", HTTP_STATUS.NOT_FOUND);
+            return null;
          }
 
-         return user;
+         return { id };
       } catch (error) {
          throw new AppError(
             "Internal server error",

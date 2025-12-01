@@ -12,7 +12,8 @@ export class AdminService {
    static async createAdmin(userData) {
       try {
          const {
-            user_name,
+            first_name,
+            last_name,
             email,
             password,
             phone_number = null,
@@ -28,7 +29,8 @@ export class AdminService {
 
          const admin = await UserModel.create({
             id,
-            user_name,
+            first_name,
+            last_name,
             email,
             phone_number,
             password_hash,
@@ -46,8 +48,8 @@ export class AdminService {
          // Create token for email verification
          const token = JWTUtils.createToken(
             {
-               id: user.id,
-               email: user.email,
+               id: admin.id,
+               email: admin.email,
                type: "email_verification",
             },
             {
@@ -55,7 +57,7 @@ export class AdminService {
             }
          );
          // Send verification email
-         await emailService.sendVerificationEmail(user.email, token);
+         await emailService.sendVerificationEmail(admin.email, token);
 
          return {
             id: admin.id,
@@ -107,7 +109,8 @@ export class AdminService {
          // prepare users data to return only necessary fields
          const users = usersData.map((user) => ({
             id: user.id,
-            user_name: user.user_name,
+            first_name: user.first_name,
+            last_name: user.last_name,
             email: user.email,
             phone_number: user.phone_number,
             profile_pic_url: user.profile_pic_url,
@@ -148,19 +151,14 @@ export class AdminService {
             throw new AppError("User not found", HTTP_STATUS.NOT_FOUND);
          }
          const updatedUser = await UserModel.update(id, { status });
+         if (!updatedUser) {
+            throw new AppError(
+               "Failed to update user status",
+               HTTP_STATUS.INTERNAL_SERVER_ERROR
+            );
+         }
 
-         return {
-            id: updatedUser.id,
-            user_name: updatedUser.user_name,
-            email: updatedUser.email,
-            phone_number: updatedUser.phone_number,
-            profile_pic_url: updatedUser.profile_pic_url,
-            role: updatedUser.role,
-            status: updatedUser.status,
-            is_email_verified: updatedUser.is_email_verified,
-            created_at: updatedUser.created_at,
-            updated_at: updatedUser.updated_at,
-         };
+         return updatedUser;
       } catch (error) {
          // Re-throw AppError instances, otherwise wrap in AppError
          if (error instanceof AppError) {
@@ -182,19 +180,14 @@ export class AdminService {
             throw new AppError("User not found", HTTP_STATUS.NOT_FOUND);
          }
          const removedUser = await UserModel.remove(id);
+         if (!removedUser) {
+            throw new AppError(
+               "Failed to remove user",
+               HTTP_STATUS.INTERNAL_SERVER_ERROR
+            );
+         }
 
-         return {
-            id: removedUser.id,
-            user_name: removedUser.user_name,
-            email: removedUser.email,
-            phone_number: removedUser.phone_number,
-            profile_pic_url: removedUser.profile_pic_url,
-            role: removedUser.role,
-            status: removedUser.status,
-            is_email_verified: removedUser.is_email_verified,
-            created_at: removedUser.created_at,
-            updated_at: removedUser.updated_at,
-         };
+         return removedUser;
       } catch (error) {
          // Re-throw AppError instances, otherwise wrap in AppError
          if (error instanceof AppError) {
@@ -219,14 +212,14 @@ export class AdminService {
             name,
             icon_url,
          });
+         if (!newAmenity) {
+            throw new AppError(
+               "Failed to create amenity",
+               HTTP_STATUS.INTERNAL_SERVER_ERROR
+            );
+         }
 
-         return {
-            id: newAmenity.id,
-            name: newAmenity.name,
-            icon_url: newAmenity.icon_url,
-            created_at: newAmenity.created_at,
-            updated_at: newAmenity.updated_at,
-         };
+         return newAmenity;
       } catch (error) {
          // Re-throw AppError instances, otherwise wrap in AppError
          if (error instanceof AppError) {
