@@ -18,6 +18,7 @@ import {
    updateAmenityValidation,
    updateUserStatusValidation,
 } from "../../../middlewares/validation.js";
+import { USER_ROLES } from "../../../constants/user.js";
 
 const router = Router();
 
@@ -25,31 +26,46 @@ const router = Router();
 router.post(
    "/",
    verifyToken,
-   // requireRole(["admin"]),
+   // requireRole([USER_ROLES.SUPER_ADMIN]),
    registerValidation,
    handleValidationErrors,
    createAdmin
 );
 // Get users route
-router.get("/users", verifyToken, requireRole(["admin"]), getAllUsers);
-// Update user profile route
-router.put(
+router.get(
+   "/users",
+   verifyToken,
+   // requireRole([USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN]),
+   getAllUsers
+);
+// Activate/Deactivate user route
+router.post(
    "/users/:id/status",
    verifyToken,
-   requireRole(["admin"]),
+   // requireRole([USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN]),
    updateUserStatusValidation,
    handleValidationErrors,
    updateUserStatus
 );
 // Remove user route
-router.delete("/users/:id", verifyToken, requireRole(["admin"]), removeUser);
+router.delete(
+   "/users/:id",
+   verifyToken,
+   // requireRole([USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN]),
+   removeUser
+);
 // Create a new amenity
-router.post("/amenities", verifyToken, requireRole(["admin"]), createAmenity);
+router.post(
+   "/amenities",
+   verifyToken,
+   // requireRole([USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN]),
+   createAmenity
+);
 // Update amenity
 router.put(
    "/amenities/:id",
    verifyToken,
-   requireRole(["admin"]),
+   // requireRole([USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN]),
    updateAmenityValidation,
    updateAmenity
 );
@@ -57,7 +73,7 @@ router.put(
 router.delete(
    "/amenities/:id",
    verifyToken,
-   requireRole(["admin"]),
+   // requireRole([USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN]),
    removeAmenity
 );
 

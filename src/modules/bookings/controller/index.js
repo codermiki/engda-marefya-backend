@@ -6,6 +6,7 @@ import AppError from "../../../utils/AppError.js";
 // Create booking controller
 export const createBooking = async (req, res, next) => {
    try {
+      const { room_id, check_in, check_out } = req?.body;
       const user_id = req?.user?.id;
       if (!user_id) {
          throw new AppError(
@@ -13,10 +14,12 @@ export const createBooking = async (req, res, next) => {
             HTTP_STATUS.UNAUTHORIZED
          );
       }
-      const data = await BookingService.createBooking({
-         ...req.body,
+      const data = await BookingService.createBooking(
          user_id,
-      });
+         room_id,
+         check_in,
+         check_out
+      );
 
       return successResponse(res, {
          message: "Booking created successfully",

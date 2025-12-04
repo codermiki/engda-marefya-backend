@@ -46,6 +46,24 @@ export const registerValidation = [
       .withMessage("Valid phone number is required"),
 ];
 
+// Update user profile validation all fields are optional but one field is required to update
+export const updateUserProfileValidation = (req, res, next) => {
+   const updateData = req.body;
+   if (!updateData) {
+      throw new AppError(
+         "At least one field is required",
+         HTTP_STATUS.BAD_REQUEST
+      );
+   }
+   if (Object.keys(updateData).length === 0) {
+      throw new AppError(
+         "At least one field is required",
+         HTTP_STATUS.BAD_REQUEST
+      );
+   }
+   next();
+};
+
 // Login validation
 export const loginValidation = [
    body("email").isEmail().withMessage("Valid email is required"),
@@ -66,7 +84,6 @@ export const resetPassValidation = [
 
 // Create hotel validation
 export const createHotelValidation = [
-   body("owner_id").notEmpty().withMessage("Owner ID is required"),
    body("name").notEmpty().withMessage("Hotel name is required"),
    body("location").notEmpty().withMessage("Hotel location is required"),
    body("contact_info")

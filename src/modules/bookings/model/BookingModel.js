@@ -5,17 +5,24 @@ import AppError from "../../../utils/AppError.js";
 class BookingModel {
    // Create a new hotel
    static async createBooking(bookingData) {
-      const { id, room_id, user_id, check_in, check_out, booking_reference } =
-         bookingData;
-
-      const query = `INSERT INTO bookings (id, room_id, user_id, check_in, check_out, booking_reference)
-      VALUES (?, ?, ?, ?, ?, ?)`;
+      const {
+         id,
+         user_id,
+         room_id,
+         check_in,
+         check_out,
+         total_amount,
+         booking_reference,
+      } = bookingData;
+      const query = `INSERT INTO bookings (id, room_id, user_id, check_in, check_out, total_amount, booking_reference)
+      VALUES (?, ?, ?, ?, ?, ?, ?)`;
       const values = [
          id,
          room_id,
          user_id,
          check_in,
          check_out,
+         total_amount,
          booking_reference,
       ];
 
@@ -134,7 +141,6 @@ class BookingModel {
             created_at: booking.created_at,
          };
       } catch (error) {
-         console.log(error);
          throw new AppError(
             "Error fetching booking details",
             HTTP_STATUS.INTERNAL_SERVER_ERROR
@@ -168,7 +174,6 @@ class BookingModel {
 
          return rows[0];
       } catch (error) {
-         console.log(error);
          throw new AppError(
             "Error fetching payment details",
             HTTP_STATUS.INTERNAL_SERVER_ERROR
@@ -189,7 +194,6 @@ class BookingModel {
 
          return { id };
       } catch (error) {
-         console.log(error);
          throw new AppError(
             "Error cancelling booking",
             HTTP_STATUS.INTERNAL_SERVER_ERROR
@@ -242,7 +246,6 @@ class BookingModel {
 
          return rows;
       } catch (error) {
-         console.log(error);
          throw new AppError(
             "Error fetching user bookings",
             HTTP_STATUS.INTERNAL_SERVER_ERROR
@@ -266,7 +269,6 @@ class BookingModel {
 
          return rows[0].count;
       } catch (error) {
-         console.log(error);
          throw new AppError(
             "Error counting user bookings",
             HTTP_STATUS.INTERNAL_SERVER_ERROR
@@ -328,7 +330,6 @@ class BookingModel {
 
          return rows;
       } catch (error) {
-         console.log(error);
          throw new AppError(
             "Error fetching hotel bookings",
             HTTP_STATUS.INTERNAL_SERVER_ERROR
@@ -352,7 +353,6 @@ class BookingModel {
 
          return rows[0].count;
       } catch (error) {
-         console.log(error);
          throw new AppError(
             "Error counting hotel bookings",
             HTTP_STATUS.INTERNAL_SERVER_ERROR

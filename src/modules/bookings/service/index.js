@@ -6,17 +6,23 @@ import {
    generateId,
 } from "../../../utils/idGenerator.js";
 import { PAGINATION } from "../../../constants/pagination.js";
+import HotelModel from "../../hotels/model/HotelModel.js";
 
 export class BookingService {
    // Create booking service
-   static async createBooking(data) {
+   static async createBooking(user_id, room_id, check_in, check_out) {
       try {
          const id = generateId();
          const booking_reference = generateBookingReference(id);
+         const total_amount = await HotelModel.getRoomPrice(room_id);
          const booking = await BookingModel.createBooking({
             id,
+            user_id,
+            room_id,
+            check_in,
+            check_out,
+            total_amount,
             booking_reference,
-            ...data,
          });
          if (!booking) {
             throw new AppError(
@@ -151,16 +157,49 @@ export class BookingService {
             throw new AppError("Page not found.", HTTP_STATUS.NOT_FOUND);
          }
 
-         const bookings = await BookingModel.getHotelBookings(
+         const result = await BookingModel.getHotelBookings(
             id,
             status,
             page,
             limit
          );
 
-         if (!bookings) {
+         if (!result) {
             throw new AppError("Hotel not found.", HTTP_STATUS.NOT_FOUND);
          }
+         // prepare bookings
+         const bookings = result.map((booking) => {
+            return {
+               id: booking.id,
+               booking_reference: booking.booking_reference,
+               room: {
+                  id: booking.room_id,
+                  room_number: booking.room_number,
+                  room_type: {
+                     id: booking.room_type_id,
+                     name: booking.room_type_name,
+                     price_per_night: booking.price_per_night,
+                  },
+               },
+               user: {
+                  id: booking.user_id,
+                  first_name: booking.first_name,
+                  last_name: booking.last_name,
+                  email: booking.email,
+               },
+               hotel: {
+                  id: booking.hotel_id,
+                  name: booking.hotel_name,
+                  location: booking.hotel_location,
+               },
+               check_in: booking.check_in,
+               check_out: booking.check_out,
+               total_amount: booking.total_amount,
+               status: booking.status,
+               created_at: booking.created_at,
+               updated_at: booking.updated_at,
+            };
+         });
 
          // prepare pagination
          const pagination = {

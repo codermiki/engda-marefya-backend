@@ -374,7 +374,7 @@ class HotelModel {
       return hotelRows[0];
    }
 
-   // get hotels roomtypes
+   // get hotels room types
    static async getHotelRoomTypes(hotelId, status = null) {
       let query = `SELECT id, name, description, price_per_night, main_image_url, status
           FROM room_types
@@ -796,7 +796,7 @@ class HotelModel {
             return null;
          }
 
-         return id;
+         return { id };
       } catch (error) {
          if (error instanceof AppError) {
             throw error;
@@ -804,6 +804,31 @@ class HotelModel {
 
          throw new AppError(
             "Failed to delete amenities. Please try again.",
+            HTTP_STATUS.INTERNAL_SERVER_ERROR
+         );
+      }
+   }
+
+   // get room price
+   static async getRoomPrice(roomId) {
+      // join with rooms table to get room_type_id
+      const query = `
+         SELECT rt.price_per_night
+         FROM room_types rt
+         JOIN rooms r ON rt.id = r.room_type_id
+         WHERE r.id = ?`;
+      try {
+         const [rows] = await pool.execute(query, [roomId]);
+         if (rows.length === 0) {
+            throw new AppError("Room not found", HTTP_STATUS.NOT_FOUND);
+         }
+         return rows[0].price_per_night;
+      } catch (error) {
+         if (error instanceof AppError) {
+            throw error;
+         }
+         throw new AppError(
+            "Internal server error",
             HTTP_STATUS.INTERNAL_SERVER_ERROR
          );
       }

@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { getUserProfile, updateUserProfile } from "../controller/index.js";
+import { updateUserProfileValidation } from "../../../middlewares/validation.js";
 import {
    verifyToken,
    requireUserOwnership,
@@ -20,6 +21,7 @@ router.put(
    "/:id",
    verifyToken,
    requireUserOwnership(["admin"]),
+   updateUserProfileValidation,
    updateUserProfile
 );
 

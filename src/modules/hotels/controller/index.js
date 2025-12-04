@@ -7,14 +7,13 @@ import { HotelService } from "../service/index.js";
 export const createHotel = async (req, res, next) => {
    try {
       const {
-         owner_id,
          name,
          location,
          contact_info,
          description,
          business_license,
          profile_pic_url,
-      } = req.body;
+      } = req?.body;
 
       if (
          !name ||
@@ -25,6 +24,11 @@ export const createHotel = async (req, res, next) => {
          !profile_pic_url
       ) {
          throw new AppError("All fields are required", HTTP_STATUS.BAD_REQUEST);
+      }
+
+      const owner_id = req?.user?.id;
+      if (!owner_id) {
+         throw new AppError("Owner ID is required", HTTP_STATUS.BAD_REQUEST);
       }
 
       const data = await HotelService.createHotel({
