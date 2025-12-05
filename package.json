@@ -15,6 +15,7 @@
       "bcryptjs": "^3.0.2",
       "bson": "^6.10.4",
       "chalk": "^5.6.2",
+      "chapa-nodejs": "^2.0.1",
       "cors": "^2.8.5",
       "dotenv": "^17.2.3",
       "express": "^5.1.0",

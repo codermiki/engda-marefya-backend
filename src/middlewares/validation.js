@@ -199,3 +199,8 @@ export const createBookingValidation = [
    body("check_in").notEmpty().withMessage("Check in date is required"),
    body("check_out").notEmpty().withMessage("Check out date is required"),
 ];
+
+// Create payment validation
+export const createPaymentValidation = [
+   body("booking_id").notEmpty().withMessage("Booking id is required"),
+];
