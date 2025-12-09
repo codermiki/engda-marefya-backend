@@ -1,5 +1,6 @@
 import "dotenv/config";
 import pool from "./config/db.js";
+import ngrok from "@ngrok/ngrok";
 
 // Import the configured Express app
 import app from "./app.js";
@@ -29,3 +30,9 @@ app.listen(PORT, "0.0.0.0", (error) => {
       console.log(`==> Check health on http://${HOST}:${PORT}/api/v1/health`);
    }
 });
+
+// ====== Start ngrok ======
+ngrok
+   .connect({ addr: PORT, authtoken_from_env: true })
+   .then((listener) => console.log(`Ingress established at: ${listener.url()}`))
+   .catch((error) => console.error("==> ngrok connection failed:", error));
