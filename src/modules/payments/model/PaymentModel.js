@@ -66,6 +66,51 @@ class PaymentModel {
          );
       }
    }
+
+   // Get payment details by transaction reference
+   static async getPaymentDetailsByReference(reference) {
+      const query = `SELECT * FROM payments WHERE transaction_reference = ?`;
+      const values = [reference];
+
+      try {
+         const [result] = await pool.execute(query, values);
+         if (result.length === 0) {
+            return null;
+         }
+
+         return result[0];
+      } catch (error) {
+         throw new AppError(
+            "Internal server error",
+            HTTP_STATUS.INTERNAL_SERVER_ERROR
+         );
+      }
+   }
+
+   // Update payment
+   static async updatePayment({
+      transaction_reference,
+      status,
+      payment_method,
+      currency,
+   }) {
+      const query = `UPDATE payments SET status = ?, payment_method = ?, currency = ? WHERE transaction_reference = ?`;
+      const values = [status, payment_method, currency, transaction_reference];
+
+      try {
+         const [result] = await pool.execute(query, values);
+         if (result.affectedRows === 0) {
+            return null;
+         }
+
+         return { transaction_reference, status, payment_method, currency };
+      } catch (error) {
+         throw new AppError(
+            "Internal server error",
+            HTTP_STATUS.INTERNAL_SERVER_ERROR
+         );
+      }
+   }
 }
 
 export default PaymentModel;

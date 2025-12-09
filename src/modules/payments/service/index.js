@@ -73,4 +73,38 @@ export class PaymentService {
          );
       }
    }
+
+   // Verify payment service
+   static async verifyPayment(reference) {
+      const payment = await PaymentModel.getPaymentDetailsByReference(
+         reference
+      );
+
+      if (!payment) {
+         throw new AppError("Payment not found", HTTP_STATUS.NOT_FOUND);
+      }
+
+      return payment;
+   }
+
+   // Update payment service
+   static async updatePayment({
+      transaction_reference,
+      status,
+      payment_method,
+      currency,
+   }) {
+      const payment = await PaymentModel.updatePayment({
+         transaction_reference,
+         status,
+         payment_method,
+         currency,
+      });
+
+      if (!payment) {
+         return null;
+      }
+
+      return payment;
+   }
 }

@@ -1,5 +1,9 @@
 import { Router } from "express";
-import { initiatePayment } from "../controller/index.js";
+import {
+   initiatePayment,
+   verifyPayment,
+   webhookPayment,
+} from "../controller/index.js";
 import { verifyToken } from "../../../middlewares/authMiddleware.js";
 import {
    createPaymentValidation,
@@ -16,5 +20,11 @@ router.post(
    handleValidationErrors,
    initiatePayment
 );
+
+// Verify payment routes
+router.get("/verify/:reference", verifyToken, verifyPayment);
+
+// Webhook payment routes
+router.post("/webhook", webhookPayment);
 
 export default router;
