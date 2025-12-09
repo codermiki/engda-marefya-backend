@@ -77,6 +77,23 @@ export const loginUser = async (req, res, next) => {
    }
 };
 
+// Refresh Token controller
+export const refreshToken = async (req, res, next) => {
+   try {
+      const { refresh_token } = req.body;
+
+      const result = await AuthService.refreshToken(refresh_token);
+
+      return successResponse(res, {
+         message: "Refresh token successful",
+         data: result,
+         statusCode: HTTP_STATUS.OK,
+      });
+   } catch (error) {
+      next(error);
+   }
+};
+
 // Forgot Password controller
 export const forgotPassword = async (req, res, next) => {
    try {

@@ -109,6 +109,82 @@ class UserModel {
       }
    }
 
+   // Create refresh token
+   static async createRefreshToken(user_id, refresh_token) {
+      const query =
+         "INSERT INTO refresh_tokens (user_id, refresh_token) VALUES (?, ?)";
+
+      try {
+         const [result] = await pool.execute(query, [user_id, refresh_token]);
+         if (result.affectedRows === 0) {
+            return null;
+         }
+         return {
+            user_id,
+            refresh_token,
+         };
+      } catch (error) {
+         throw new AppError(
+            "Internal server error",
+            HTTP_STATUS.INTERNAL_SERVER_ERROR
+         );
+      }
+   }
+
+   // Find user by refresh token
+   static async findRefreshToken(user_id) {
+      const query =
+         "SELECT refresh_token FROM refresh_tokens WHERE user_id = ?";
+
+      try {
+         const [rows] = await pool.execute(query, [user_id]);
+         return rows[0] || null;
+      } catch (error) {
+         throw new AppError(
+            "Internal server error",
+            HTTP_STATUS.INTERNAL_SERVER_ERROR
+         );
+      }
+   }
+
+   // Delete refresh token
+   static async deleteRefreshToken(user_id) {
+      const query = "DELETE FROM refresh_tokens WHERE user_id = ?";
+
+      try {
+         const [result] = await pool.execute(query, [user_id]);
+         if (result.affectedRows === 0) {
+            return null;
+         }
+         return { user_id };
+      } catch (error) {
+         throw new AppError(
+            "Internal server error",
+            HTTP_STATUS.INTERNAL_SERVER_ERROR
+         );
+      }
+   }
+
+   // Update Refresh Token
+   static async updateRefreshToken(user_id, refresh_token) {
+      const query =
+         "UPDATE refresh_tokens SET refresh_token = ? WHERE user_id = ?";
+
+      try {
+         const [result] = await pool.execute(query, [refresh_token, user_id]);
+         if (result.affectedRows === 0) {
+            return null;
+         }
+
+         return { user_id, refresh_token };
+      } catch (error) {
+         throw new AppError(
+            "Internal server error",
+            HTTP_STATUS.INTERNAL_SERVER_ERROR
+         );
+      }
+   }
+
    // find users with filters
    static async getAllUsers(filters = {}, { page, limit }) {
       const offset = (page - 1) * limit;

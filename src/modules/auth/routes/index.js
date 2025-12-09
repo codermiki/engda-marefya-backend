@@ -4,6 +4,7 @@ import {
    loginValidation,
    resetPassValidation,
    handleValidationErrors,
+   refreshTokenValidation,
 } from "../../../middlewares/validation.js";
 import {
    registerCustomer,
@@ -12,6 +13,7 @@ import {
    loginUser,
    forgotPassword,
    resetPassword,
+   refreshToken,
 } from "../controller/index.js";
 
 const router = Router();
@@ -47,6 +49,14 @@ router.post(
    resetPassValidation,
    handleValidationErrors,
    resetPassword
+);
+
+// Refresh Token route
+router.post(
+   "/refresh-token",
+   refreshTokenValidation,
+   handleValidationErrors,
+   refreshToken
 );
 
 export default router;

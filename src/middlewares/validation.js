@@ -204,3 +204,8 @@ export const createBookingValidation = [
 export const createPaymentValidation = [
    body("booking_id").notEmpty().withMessage("Booking id is required"),
 ];
+
+// Refresh token validation
+export const refreshTokenValidation = [
+   body("refresh_token").notEmpty().withMessage("Refresh token is required"),
+];

@@ -8,6 +8,7 @@ import PasswordUtils from "../../../utils/PasswordUtils.js";
 import UserModel from "../model/UserModel.js";
 
 export class AuthService {
+   // Register user service
    static async registerUser(userData) {
       try {
          const {
@@ -75,6 +76,7 @@ export class AuthService {
       }
    }
 
+   // Verify email service
    static async verifyEmail(token) {
       try {
          // Verify the JWT token
@@ -127,6 +129,7 @@ export class AuthService {
       }
    }
 
+   // Login user service
    static async loginUser(email, password) {
       try {
          // Validate input
@@ -187,14 +190,37 @@ export class AuthService {
                HTTP_STATUS.FORBIDDEN
             );
          }
+         const userRefreshToken = await UserModel.findRefreshToken(user.id);
+
+         if (userRefreshToken) {
+            await UserModel.deleteRefreshToken(user.id);
+         }
+
+         const refresh_token = JWTUtils.createToken(
+            {
+               id: user.id,
+               email: user.email,
+               type: "refresh",
+            },
+            {
+               expiresIn: "7d",
+            }
+         );
+
+         await UserModel.createRefreshToken(user.id, refresh_token);
 
          // Generate access token using JWTUtils
-         const accessToken = JWTUtils.createToken({
-            id: user.id,
-            email: user.email,
-            role: user.role,
-            type: "access",
-         });
+         const accessToken = JWTUtils.createToken(
+            {
+               id: user.id,
+               email: user.email,
+               role: user.role,
+               type: "access",
+            },
+            {
+               expiresIn: "1h",
+            }
+         );
 
          // Prepare user data for response (exclude sensitive fields)
          const userResponse = {
@@ -212,6 +238,7 @@ export class AuthService {
          return {
             user: userResponse,
             access_token: accessToken,
+            refresh_token,
          };
       } catch (error) {
          // Re-throw AppError instances, otherwise wrap in AppError
@@ -226,6 +253,68 @@ export class AuthService {
       }
    }
 
+   // Refresh token service
+   static async refreshToken(refresh_token) {
+      try {
+         // Verify the JWT token
+         const decoded = JWTUtils.verifyToken(refresh_token);
+
+         if (decoded.type !== "refresh") {
+            throw new AppError("Invalid token type", HTTP_STATUS.UNAUTHORIZED);
+         }
+
+         // Find user by ID from token
+         const user = await UserModel.findById(decoded.id);
+         if (!user) {
+            throw new AppError("User not found", HTTP_STATUS.NOT_FOUND);
+         }
+
+         // Check if user is active
+         if (user.status !== "active") {
+            throw new AppError(
+               "Your account has been deactivated. Please contact support.",
+               HTTP_STATUS.FORBIDDEN
+            );
+         }
+
+         const { refresh_token: userRefreshToken } =
+            await UserModel.findRefreshToken(decoded.id);
+         if (!userRefreshToken) {
+            throw new AppError("User not found", HTTP_STATUS.NOT_FOUND);
+         }
+
+         if (userRefreshToken !== refresh_token) {
+            throw new AppError(
+               "Invalid refresh token",
+               HTTP_STATUS.UNAUTHORIZED
+            );
+         }
+
+         // Generate access token using JWTUtils
+         const accessToken = JWTUtils.createToken({
+            id: user.id,
+            email: user.email,
+            role: user.role,
+            type: "access",
+         });
+
+         return {
+            access_token: accessToken,
+         };
+      } catch (error) {
+         // Re-throw AppError instances, otherwise wrap in AppError
+         if (error instanceof AppError) {
+            throw error;
+         }
+
+         throw new AppError(
+            "Refresh token failed. Please try again.",
+            HTTP_STATUS.INTERNAL_SERVER_ERROR
+         );
+      }
+   }
+
+   // Forgot password service
    static async forgotPassword(email) {
       try {
          // Validate email
@@ -300,6 +389,7 @@ export class AuthService {
       }
    }
 
+   // Reset password service
    static async resetPassword(token, newPassword) {
       try {
          // Validate inputs
