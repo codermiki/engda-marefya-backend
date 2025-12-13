@@ -15,6 +15,7 @@ import {
    deleteRoomTypeImage,
    getAllHotels,
    getAllRoomTypes,
+   getAvailableRooms,
 } from "../controller/index.js";
 import {
    verifyToken,
@@ -33,6 +34,7 @@ import {
    updateHotelValidation,
    updateRoomTypeRoomStatusValidation,
    updateRoomTypeValidation,
+   getAvailableRoomsValidation,
 } from "../../../middlewares/validation.js";
 
 const router = Router();
@@ -99,6 +101,14 @@ router.put(
 );
 // Get room type details
 router.get("/room-types/:id", getRoomTypesById);
+// Get available rooms for a room type
+router.get(
+   "/room-types/:id/available-rooms",
+   getAvailableRoomsValidation,
+   handleValidationErrors,
+   getAvailableRooms
+);
+
 // Add amenities to a room type
 router.post(
    "/room-types/:id/add-amenities",

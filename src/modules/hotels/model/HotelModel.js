@@ -612,6 +612,7 @@ class HotelModel {
    // Get all room types with filter, pagination and search
    static async getAllRoomTypes(
       search,
+      location,
       minPrice,
       maxPrice,
       bedType,
@@ -631,6 +632,11 @@ class HotelModel {
       if (search) {
          conditions.push(`(h.location LIKE ? OR h.name LIKE ?)`);
          values.push(`%${search}%`, `%${search}%`);
+      }
+
+      if (location) {
+         conditions.push(`h.location LIKE ?`);
+         values.push(`%${location}%`);
       }
 
       if (minPrice !== undefined && maxPrice !== undefined) {
@@ -677,6 +683,7 @@ class HotelModel {
    // Count all room types with filter, pagination and search
    static async countAllRoomTypes(
       search,
+      location,
       minPrice,
       maxPrice,
       bedType,
@@ -693,6 +700,11 @@ class HotelModel {
       if (search) {
          conditions.push(`(h.location LIKE ? OR h.name LIKE ?)`);
          values.push(`%${search}%`, `%${search}%`);
+      }
+
+      if (location) {
+         conditions.push(`h.location LIKE ?`);
+         values.push(`%${location}%`);
       }
 
       if (minPrice !== undefined && maxPrice !== undefined) {
@@ -824,6 +836,43 @@ class HotelModel {
          }
          return rows[0].price_per_night;
       } catch (error) {
+         if (error instanceof AppError) {
+            throw error;
+         }
+         throw new AppError(
+            "Internal server error",
+            HTTP_STATUS.INTERNAL_SERVER_ERROR
+         );
+      }
+   }
+
+   // Get available rooms for a room type
+   static async getAvailableRooms(roomTypeId, checkIn, checkOut) {
+      const query = `
+         SELECT r.id, r.room_number, r.status
+         FROM rooms r
+         JOIN room_types rt ON r.room_type_id = rt.id
+         WHERE rt.id = ?
+         AND r.status = 'available'
+         AND NOT EXISTS (
+            SELECT 1
+            FROM bookings b
+            WHERE b.room_id = r.id
+            AND (
+               ? < b.check_out
+               AND ? > b.check_in
+            )
+         );
+      `;
+      try {
+         const [rows] = await pool.execute(query, [
+            roomTypeId,
+            checkIn,
+            checkOut,
+         ]);
+         return rows;
+      } catch (error) {
+         console.log(error);
          if (error instanceof AppError) {
             throw error;
          }

@@ -121,18 +121,12 @@ export class HotelService {
    static async getRoomTypeById(roomTypeId) {
       try {
          let roomType = await HotelModel.getRoomTypeById(roomTypeId);
-         let rooms = await HotelModel.getRoomTypeRooms(roomTypeId);
          let amenities = await HotelModel.getRoomTypeAmenities(roomTypeId);
          let images = await HotelModel.getRoomTypeImages(roomTypeId);
 
          // Check if room type exists
          if (!roomType) {
             throw new AppError("Room type not found", HTTP_STATUS.NOT_FOUND);
-         }
-
-         // Check if rooms exist
-         if (!rooms) {
-            rooms = [];
          }
 
          // Check if amenities exist
@@ -176,14 +170,6 @@ export class HotelService {
                     icon_url: amenity.icon_url,
                  }))
                : [],
-            rooms: rooms
-               ? rooms.map((room) => ({
-                    id: room.id,
-                    room_number: room.room_number,
-                    status: room.status,
-                 }))
-               : [],
-            available_rooms_count: rooms.length,
             created_at: roomType.created_at,
             updated_at: roomType.updated_at,
          };
@@ -544,6 +530,7 @@ export class HotelService {
    // Get all room types with filter, pagination and search
    static async getAllRoomTypes(
       search = "",
+      location = "",
       minPrice,
       maxPrice,
       bedType,
@@ -554,6 +541,7 @@ export class HotelService {
       try {
          const totalRoomTypes = await HotelModel.countAllRoomTypes(
             search,
+            location,
             minPrice,
             maxPrice,
             bedType,
@@ -561,17 +549,14 @@ export class HotelService {
          );
          const totalPages = Math.ceil(totalRoomTypes / limit);
 
-         if (totalRoomTypes === 0) {
-            throw new AppError("Room types not found.", HTTP_STATUS.NOT_FOUND);
-         }
-
          // page should not exced from the totalPages
-         if (page > totalPages) {
+         if ((page > totalPages) & (page > 1)) {
             throw new AppError("Page not found.", HTTP_STATUS.NOT_FOUND);
          }
 
          const roomTypes = await HotelModel.getAllRoomTypes(
             search,
+            location,
             minPrice,
             maxPrice,
             bedType,
@@ -596,6 +581,28 @@ export class HotelService {
 
          throw new AppError(
             "Failed to retrieve room types. Please try again.",
+            HTTP_STATUS.INTERNAL_SERVER_ERROR
+         );
+      }
+   }
+
+   // Get available rooms for a room type
+   static async getAvailableRooms(roomTypeId, checkIn, checkOut) {
+      try {
+         const availableRooms = await HotelModel.getAvailableRooms(
+            roomTypeId,
+            checkIn,
+            checkOut
+         );
+
+         return availableRooms;
+      } catch (error) {
+         if (error instanceof AppError) {
+            throw error;
+         }
+
+         throw new AppError(
+            "Failed to retrieve available rooms. Please try again.",
             HTTP_STATUS.INTERNAL_SERVER_ERROR
          );
       }

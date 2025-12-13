@@ -353,6 +353,7 @@ export const getAllHotels = async (req, res, next) => {
 export const getAllRoomTypes = async (req, res, next) => {
    try {
       const search = req?.query?.search;
+      const location = req?.query?.location;
       const minPrice = req?.query?.minPrice;
       const maxPrice = req?.query?.maxPrice;
       const bedType = req?.query?.bedType;
@@ -362,6 +363,7 @@ export const getAllRoomTypes = async (req, res, next) => {
 
       const { roomTypes, pagination } = await HotelService.getAllRoomTypes(
          search,
+         location,
          minPrice,
          maxPrice,
          bedType,
@@ -373,6 +375,29 @@ export const getAllRoomTypes = async (req, res, next) => {
       return successResponse(res, {
          message: "Room types fetched successfully",
          data: { roomTypes, pagination },
+         statusCode: HTTP_STATUS.OK,
+      });
+   } catch (error) {
+      next(error);
+   }
+};
+
+// Get available rooms for a room type
+export const getAvailableRooms = async (req, res, next) => {
+   try {
+      const { id } = req.params;
+      const check_in = req?.query?.check_in;
+      const check_out = req?.query?.check_out;
+
+      const data = await HotelService.getAvailableRooms(
+         id,
+         check_in,
+         check_out
+      );
+
+      return successResponse(res, {
+         message: "Available rooms fetched successfully",
+         data,
          statusCode: HTTP_STATUS.OK,
       });
    } catch (error) {
