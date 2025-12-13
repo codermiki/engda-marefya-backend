@@ -209,9 +209,3 @@ export const createPaymentValidation = [
 export const refreshTokenValidation = [
    body("refresh_token").notEmpty().withMessage("Refresh token is required"),
 ];
-
-// Get available rooms validation
-export const getAvailableRoomsValidation = [
-   body("check_in").notEmpty().withMessage("Check in date is required"),
-   body("check_out").notEmpty().withMessage("Check out date is required"),
-];

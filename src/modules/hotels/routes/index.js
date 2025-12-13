@@ -34,7 +34,6 @@ import {
    updateHotelValidation,
    updateRoomTypeRoomStatusValidation,
    updateRoomTypeValidation,
-   getAvailableRoomsValidation,
 } from "../../../middlewares/validation.js";
 
 const router = Router();
@@ -102,12 +101,7 @@ router.put(
 // Get room type details
 router.get("/room-types/:id", getRoomTypesById);
 // Get available rooms for a room type
-router.get(
-   "/room-types/:id/available-rooms",
-   getAvailableRoomsValidation,
-   handleValidationErrors,
-   getAvailableRooms
-);
+router.get("/room-types/:id/available-rooms", getAvailableRooms);
 
 // Add amenities to a room type
 router.post(

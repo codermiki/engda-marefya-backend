@@ -389,6 +389,19 @@ export const getAvailableRooms = async (req, res, next) => {
       const check_in = req?.query?.check_in;
       const check_out = req?.query?.check_out;
 
+      if (!id) {
+         throw new AppError(
+            "Room type id is required",
+            HTTP_STATUS.BAD_REQUEST
+         );
+      }
+      if (!check_in || !check_out) {
+         throw new AppError(
+            "Check in and check out dates are required",
+            HTTP_STATUS.BAD_REQUEST
+         );
+      }
+
       const data = await HotelService.getAvailableRooms(
          id,
          check_in,
