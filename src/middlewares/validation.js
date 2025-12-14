@@ -209,3 +209,12 @@ export const createPaymentValidation = [
 export const refreshTokenValidation = [
    body("refresh_token").notEmpty().withMessage("Refresh token is required"),
 ];
+
+// Add review to booking validation
+export const addReviewToBookingValidation = [
+   body("rating")
+      .notEmpty()
+      .withMessage("Rating is required")
+      .isInt({ min: 1, max: 5 }),
+   body("comment").isString().notEmpty().withMessage("Comment is required"),
+];

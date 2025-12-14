@@ -359,6 +359,41 @@ class BookingModel {
          );
       }
    }
+
+   // Add review to booking
+   static async addReviewToBooking(
+      hotel_id,
+      booking_id,
+      room_type_id,
+      rating,
+      comment
+   ) {
+      const query = `INSERT INTO reviews (hotel_id, booking_id, room_type_id, rating, comment)
+      VALUES (?, ?, ?, ?, ?)`;
+      const values = [hotel_id, booking_id, room_type_id, rating, comment];
+
+      try {
+         const [result] = await pool.execute(query, values);
+         if (result.affectedRows === 0) {
+            return null;
+         }
+
+         return { hotel_id, booking_id, room_type_id, rating, comment };
+      } catch (error) {
+         if (error.code === "ER_DUP_ENTRY") {
+            if (error.message.includes("booking_id")) {
+               throw new AppError(
+                  "Review already exists for this booking",
+                  HTTP_STATUS.BAD_REQUEST
+               );
+            }
+         }
+         throw new AppError(
+            "Internal server error",
+            HTTP_STATUS.INTERNAL_SERVER_ERROR
+         );
+      }
+   }
 }
 
 export default BookingModel;

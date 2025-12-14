@@ -5,9 +5,11 @@ import {
    cancelBooking,
    getUserBookings,
    getHotelBookings,
+   addReviewToBooking,
 } from "../controller/index.js";
 import { verifyToken } from "../../../middlewares/authMiddleware.js";
 import {
+   addReviewToBookingValidation,
    createBookingValidation,
    handleValidationErrors,
 } from "../../../middlewares/validation.js";
@@ -34,5 +36,17 @@ router.get("/user/:id", verifyToken, getUserBookings);
 
 // Get hotel bookings
 router.get("/hotel/:id", verifyToken, getHotelBookings);
+
+// Add review to booking
+router.post(
+   "/:id/reviews",
+   verifyToken,
+   addReviewToBookingValidation,
+   handleValidationErrors,
+   addReviewToBooking
+);
+
+// Get reviews for a hotel
+// router.get("/hotel/:id/reviews", verifyToken, getHotelReviews);
 
 export default router;

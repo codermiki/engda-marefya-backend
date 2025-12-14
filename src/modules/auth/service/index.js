@@ -17,7 +17,7 @@ export class AuthService {
             email,
             password,
             phone_number = null,
-            role = USER_ROLES.CUSTOMER,
+            role,
          } = userData;
 
          // Hash password

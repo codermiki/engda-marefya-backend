@@ -417,3 +417,83 @@ export const getAvailableRooms = async (req, res, next) => {
       next(error);
    }
 };
+
+// Toggle room type in wishlist
+export const toggleWishlist = async (req, res, next) => {
+   try {
+      const id = req.params?.id;
+      const userId = req?.user?.id;
+      if (!id) {
+         throw new AppError(
+            "Room type id is required",
+            HTTP_STATUS.BAD_REQUEST
+         );
+      }
+      if (!userId) {
+         throw new AppError(
+            "Authentication required",
+            HTTP_STATUS.UNAUTHORIZED
+         );
+      }
+      const data = await HotelService.toggleWishlist(id, userId);
+
+      return successResponse(res, {
+         message: "Room type toggled in wishlist successfully",
+         data,
+         statusCode: HTTP_STATUS.OK,
+      });
+   } catch (error) {
+      next(error);
+   }
+};
+
+// Check if room type is in wishlist
+export const checkIfRoomTypeInWishlist = async (req, res, next) => {
+   try {
+      const id = req.params?.id;
+      const userId = req?.user?.id;
+      if (!id) {
+         throw new AppError(
+            "Room type id is required",
+            HTTP_STATUS.BAD_REQUEST
+         );
+      }
+      if (!userId) {
+         throw new AppError(
+            "Authentication required",
+            HTTP_STATUS.UNAUTHORIZED
+         );
+      }
+      const data = await HotelService.checkIfRoomTypeInWishlist(id, userId);
+
+      return successResponse(res, {
+         message: "Room type wishlist status fetched successfully",
+         data,
+         statusCode: HTTP_STATUS.OK,
+      });
+   } catch (error) {
+      next(error);
+   }
+};
+
+// Get reviews for a room type
+export const getRoomTypeReviews = async (req, res, next) => {
+   try {
+      const id = req.params?.id;
+      if (!id) {
+         throw new AppError(
+            "Room type id is required",
+            HTTP_STATUS.BAD_REQUEST
+         );
+      }
+      const data = await HotelService.getRoomTypeReviews(id);
+
+      return successResponse(res, {
+         message: "Room type reviews fetched successfully",
+         data,
+         statusCode: HTTP_STATUS.OK,
+      });
+   } catch (error) {
+      next(error);
+   }
+};

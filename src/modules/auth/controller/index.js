@@ -7,8 +7,15 @@ import { AuthService } from "../service/index.js";
 // Register customer controller
 export const registerCustomer = async (req, res, next) => {
    try {
-      const userData = req.body;
-      const data = await AuthService.registerUser(userData);
+      const { first_name, last_name, email, password, phone_number } = req.body;
+      const data = await AuthService.registerUser({
+         first_name,
+         last_name,
+         email,
+         password,
+         phone_number,
+         role: USER_ROLES.CUSTOMER,
+      });
 
       return successResponse(res, {
          message: "User created successfully. Verification email sent.",
@@ -23,9 +30,15 @@ export const registerCustomer = async (req, res, next) => {
 // Register hotel owner controller
 export const registerHotelOwner = async (req, res, next) => {
    try {
-      let userData = req.body;
-      userData.role = USER_ROLES.HOTEL_OWNER;
-      const data = await AuthService.registerUser(userData);
+      let { first_name, last_name, email, password, phone_number } = req.body;
+      const data = await AuthService.registerUser({
+         first_name,
+         last_name,
+         email,
+         password,
+         phone_number,
+         role: USER_ROLES.HOTEL_OWNER,
+      });
 
       return successResponse(res, {
          message: "User created successfully. Verification email sent.",

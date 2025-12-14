@@ -16,6 +16,9 @@ import {
    getAllHotels,
    getAllRoomTypes,
    getAvailableRooms,
+   checkIfRoomTypeInWishlist,
+   toggleWishlist,
+   getRoomTypeReviews,
 } from "../controller/index.js";
 import {
    verifyToken,
@@ -61,6 +64,7 @@ router.post(
    handleValidationErrors,
    createHotel
 );
+
 // Update hotel info
 router.put(
    "/:id",
@@ -70,8 +74,10 @@ router.put(
    updateHotelValidation,
    updateHotel
 );
+
 // Get hotel by id
 router.get("/:id", getHotelById);
+
 // Get hotel by owner id
 router.get(
    "/owner/:id",
@@ -89,6 +95,7 @@ router.post(
    handleValidationErrors,
    createRoomType
 );
+
 // Update room type
 router.put(
    "/room-types/:id",
@@ -98,10 +105,21 @@ router.put(
    updateRoomTypeValidation,
    updateRoomType
 );
+
 // Get room type details
 router.get("/room-types/:id", getRoomTypesById);
+
 // Get available rooms for a room type
 router.get("/room-types/:id/available-rooms", getAvailableRooms);
+
+// Add or remove room type to wishlist
+router.post("/room-types/:id/wishlist", verifyToken, toggleWishlist);
+
+// Is room type in wishlist
+router.get("/room-types/:id/wishlist", verifyToken, checkIfRoomTypeInWishlist);
+
+// Get reviews for a room type
+router.get("/room-types/:id/reviews", getRoomTypeReviews);
 
 // Add amenities to a room type
 router.post(
@@ -113,6 +131,7 @@ router.post(
    handleValidationErrors,
    addRoomTypeAmenities
 );
+
 // Add rooms for a room type
 router.post(
    "/room-types/:id/rooms",
@@ -123,6 +142,7 @@ router.post(
    handleValidationErrors,
    addRoomTypeRooms
 );
+
 // Add room type images
 router.post(
    "/room-types/:id/images",
@@ -133,6 +153,7 @@ router.post(
    handleValidationErrors,
    addRoomTypeImages
 );
+
 // Update rooms status
 router.put(
    "/room-types/:id/rooms/:roomId",
@@ -143,6 +164,7 @@ router.put(
    handleValidationErrors,
    updateRoomTypeRoomStatus
 );
+
 // Delete image from a room type
 router.delete(
    "/room-types/:id/images/:imageId",

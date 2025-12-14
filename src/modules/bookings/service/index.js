@@ -222,4 +222,47 @@ export class BookingService {
          );
       }
    }
+
+   // Add review to booking service
+   static async addReviewToBooking(user_id, booking_id, rating, comment) {
+      try {
+         const booking = await BookingModel.getBookingDetails(booking_id);
+         if (!booking) {
+            throw new AppError("Booking not found.", HTTP_STATUS.NOT_FOUND);
+         }
+         if (booking.user.id !== user_id || booking.status !== "paid") {
+            throw new AppError(
+               "You are not authorized to add a review.",
+               HTTP_STATUS.UNAUTHORIZED
+            );
+         }
+         const hotel_id = booking.hotel.id;
+         const room_type_id = booking.room.room_type.id;
+
+         const review = await BookingModel.addReviewToBooking(
+            hotel_id,
+            booking_id,
+            room_type_id,
+            rating,
+            comment
+         );
+         if (!review) {
+            throw new AppError(
+               "Failed to add review to booking. Please try again.",
+               HTTP_STATUS.INTERNAL_SERVER_ERROR
+            );
+         }
+         return review;
+      } catch (error) {
+         // Re-throw AppError instances, otherwise wrap in AppError
+         if (error instanceof AppError) {
+            throw error;
+         }
+
+         throw new AppError(
+            "Failed to add review to booking. Please try again.",
+            HTTP_STATUS.INTERNAL_SERVER_ERROR
+         );
+      }
+   }
 }

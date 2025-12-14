@@ -138,3 +138,35 @@ export const getHotelBookings = async (req, res, next) => {
       next(error);
    }
 };
+
+// Add review to booking controller
+export const addReviewToBooking = async (req, res, next) => {
+   try {
+      const booking_id = req?.params?.id;
+      const { rating, comment } = req?.body;
+      const user_id = req?.user?.id;
+      if (!user_id) {
+         throw new AppError(
+            "Authentication required",
+            HTTP_STATUS.UNAUTHORIZED
+         );
+      }
+      if (!booking_id) {
+         throw new AppError("Booking id is required", HTTP_STATUS.BAD_REQUEST);
+      }
+      const data = await BookingService.addReviewToBooking(
+         user_id,
+         booking_id,
+         rating,
+         comment
+      );
+
+      return successResponse(res, {
+         message: "Review added successfully",
+         data,
+         statusCode: HTTP_STATUS.OK,
+      });
+   } catch (error) {
+      next(error);
+   }
+};

@@ -148,6 +148,8 @@ export class HotelService {
             status: roomType.status,
             bed_type: roomType.bed_type,
             number_of_beds: roomType.number_of_beds,
+            reviews_count: roomType.reviews_count,
+            average_rating: roomType.average_rating,
             hotel: {
                id: roomType.hotel_id,
                name: roomType.hotel_name,
@@ -603,6 +605,63 @@ export class HotelService {
 
          throw new AppError(
             "Failed to retrieve available rooms. Please try again.",
+            HTTP_STATUS.INTERNAL_SERVER_ERROR
+         );
+      }
+   }
+
+   // Toggle room type in wishlist
+   static async toggleWishlist(roomTypeId, userId) {
+      try {
+         const isWishlist = await HotelModel.toggleWishlist(roomTypeId, userId);
+
+         return { is_in_wishlist: isWishlist };
+      } catch (error) {
+         if (error instanceof AppError) {
+            throw error;
+         }
+
+         throw new AppError(
+            "Failed to retrieve room type wishlist status. Please try again.",
+            HTTP_STATUS.INTERNAL_SERVER_ERROR
+         );
+      }
+   }
+
+   // Check if room type is in wishlist
+   static async checkIfRoomTypeInWishlist(roomTypeId, userId) {
+      try {
+         const isWishlist = await HotelModel.checkIfRoomTypeInWishlist(
+            roomTypeId,
+            userId
+         );
+
+         return { is_in_wishlist: isWishlist };
+      } catch (error) {
+         if (error instanceof AppError) {
+            throw error;
+         }
+
+         throw new AppError(
+            "Failed to retrieve room type wishlist status. Please try again.",
+            HTTP_STATUS.INTERNAL_SERVER_ERROR
+         );
+      }
+   }
+
+   // Get reviews for a room type
+   static async getRoomTypeReviews(roomTypeId) {
+      try {
+         const reviews = await HotelModel.getRoomTypeReviews(roomTypeId);
+
+         return reviews;
+      } catch (error) {
+         if (error instanceof AppError) {
+            throw error;
+         }
+
+         throw new AppError(
+            "Failed to retrieve room type reviews. Please try again.",
             HTTP_STATUS.INTERNAL_SERVER_ERROR
          );
       }

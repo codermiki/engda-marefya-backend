@@ -158,7 +158,7 @@ class HotelModel {
       }
    }
 
-   // get room type by id
+   // get room type by id with reviews
    static async getRoomTypeById(id) {
       const query = `
          SELECT
@@ -177,10 +177,14 @@ class HotelModel {
             h.location AS hotel_location,
             h.contact_info,
             h.description AS hotel_description,
-            h.profile_pic_url
+            h.profile_pic_url,
+            COUNT(r.id) AS reviews_count,
+            ROUND(COALESCE(AVG(r.rating), 0), 1) AS average_rating
          FROM room_types AS rt
          JOIN hotels AS h ON rt.hotel_id = h.id
-         WHERE rt.id = ?`;
+         LEFT JOIN reviews AS r ON rt.id = r.room_type_id
+         WHERE rt.id = ?
+         GROUP BY rt.id`;
       try {
          const [rows] = await pool.execute(query, [id]);
          if (rows.length === 0) {
@@ -609,7 +613,7 @@ class HotelModel {
       }
    }
 
-   // Get all room types with filter, pagination and search
+   // Get all room types with filter, pagination, search, and rating order
    static async getAllRoomTypes(
       search,
       location,
@@ -617,20 +621,32 @@ class HotelModel {
       maxPrice,
       bedType,
       numberOfBeds,
-      page,
-      limit
+      page = 1,
+      limit = 10
    ) {
+      page = Number(page) > 0 ? Number(page) : 1;
+      limit = Number(limit) > 0 ? Number(limit) : 10;
       const offset = (page - 1) * limit;
+
       let query = `
-         SELECT rt.*, h.name AS hotel_name, h.location AS hotel_location
-         FROM room_types rt
-         JOIN hotels h ON rt.hotel_id = h.id
-      `;
+      SELECT 
+         rt.*,
+         h.name AS hotel_name,
+         h.location AS hotel_location,
+         COUNT(r.id) AS reviews_count,
+         ROUND(COALESCE(AVG(r.rating), 0), 1) AS average_rating
+      FROM room_types rt
+      JOIN hotels h ON rt.hotel_id = h.id
+      LEFT JOIN reviews r ON rt.id = r.room_type_id
+   `;
+
       const values = [];
       const conditions = [];
 
+      conditions.push(`rt.status = 'active'`);
+
       if (search) {
-         conditions.push(`(h.location LIKE ? OR h.name LIKE ?)`);
+         conditions.push(`(h.name LIKE ? OR h.location LIKE ?)`);
          values.push(`%${search}%`, `%${search}%`);
       }
 
@@ -660,19 +676,22 @@ class HotelModel {
          values.push(numberOfBeds);
       }
 
-      if (conditions.length > 0) {
-         query += ` WHERE ` + conditions.join(` AND `);
-      }
-
-      query += ` AND rt.status = 'active' LIMIT ${Number(
-         limit
-      )} OFFSET ${Number(offset)}`;
+      query += `
+      WHERE ${conditions.join(" AND ")}
+      GROUP BY rt.id
+      ORDER BY average_rating DESC
+      LIMIT ${limit} OFFSET ${offset}
+   `;
 
       try {
-         const [roomTypeRows] = await pool.execute(query, values);
-
-         return roomTypeRows;
+         const [rows] = await pool.execute(query, values);
+         return rows;
       } catch (error) {
+         console.log(error);
+         if (error instanceof AppError) {
+            throw error;
+         }
+
          throw new AppError(
             "Internal server error",
             HTTP_STATUS.INTERNAL_SERVER_ERROR
@@ -743,6 +762,10 @@ class HotelModel {
 
          return roomTypeRows[0].count;
       } catch (error) {
+         console.log(error);
+         if (error instanceof AppError) {
+            throw error;
+         }
          throw new AppError(
             "Internal server error",
             HTTP_STATUS.INTERNAL_SERVER_ERROR
@@ -849,7 +872,7 @@ class HotelModel {
    // Get available rooms for a room type
    static async getAvailableRooms(roomTypeId, checkIn, checkOut) {
       const query = `
-         SELECT r.id, r.room_number, r.status
+         SELECT r.id, r.room_number, r.floor
          FROM rooms r
          JOIN room_types rt ON r.room_type_id = rt.id
          WHERE rt.id = ?
@@ -872,7 +895,88 @@ class HotelModel {
          ]);
          return rows;
       } catch (error) {
-         console.log(error);
+         if (error instanceof AppError) {
+            throw error;
+         }
+         throw new AppError(
+            "Internal server error",
+            HTTP_STATUS.INTERNAL_SERVER_ERROR
+         );
+      }
+   }
+
+   // Toggle room type in wishlist add or remove
+   static async toggleWishlist(roomTypeId, userId) {
+      const addQuery = `
+         INSERT INTO wishlists (room_type_id, user_id)
+         VALUES (?, ?)
+      `;
+      const removeQuery = `
+         DELETE FROM wishlists
+         WHERE room_type_id = ?
+         AND user_id = ?
+      `;
+      try {
+         const [result] = await pool.execute(removeQuery, [roomTypeId, userId]);
+         if (result.affectedRows > 0) {
+            return false;
+         }
+         const [result2] = await pool.execute(addQuery, [roomTypeId, userId]);
+         if (result2.affectedRows > 0) {
+            return true;
+         }
+         throw new AppError(
+            "Failed to toggle wishlist. Please try again.",
+            HTTP_STATUS.BAD_REQUEST
+         );
+      } catch (error) {
+         if (error instanceof AppError) {
+            throw error;
+         }
+         throw new AppError(
+            "Internal server error",
+            HTTP_STATUS.INTERNAL_SERVER_ERROR
+         );
+      }
+   }
+
+   // Check if room type is in wishlist
+   static async checkIfRoomTypeInWishlist(roomTypeId, userId) {
+      const query = `
+         SELECT 1
+         FROM wishlists
+         WHERE room_type_id = ?
+         AND user_id = ?
+      `;
+      try {
+         const [rows] = await pool.execute(query, [roomTypeId, userId]);
+         return rows.length > 0;
+      } catch (error) {
+         if (error instanceof AppError) {
+            throw error;
+         }
+         throw new AppError(
+            "Internal server error",
+            HTTP_STATUS.INTERNAL_SERVER_ERROR
+         );
+      }
+   }
+
+   // Get reviews for a room type
+   static async getRoomTypeReviews(roomTypeId) {
+      const query = `
+         SELECT r.id, r.rating, r.comment, u.id as user_id, u.first_name, u.last_name, u.profile_pic_url, r.created_at, r.updated_at
+         FROM reviews r
+         JOIN room_types rt ON r.room_type_id = rt.id
+         JOIN bookings b ON r.booking_id = b.id
+         JOIN users u ON b.user_id = u.id
+         WHERE rt.id = ?
+      `;
+      try {
+         const [rows] = await pool.execute(query, [roomTypeId]);
+
+         return rows;
+      } catch (error) {
          if (error instanceof AppError) {
             throw error;
          }
