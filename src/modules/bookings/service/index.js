@@ -14,14 +14,28 @@ export class BookingService {
       try {
          const id = generateId();
          const booking_reference = generateBookingReference(id);
-         const total_amount = await HotelModel.getRoomPrice(room_id);
+         const price_per_night = await HotelModel.getRoomPrice(room_id);
+
+         const checkInDate = new Date(check_in);
+         const checkOutDate = new Date(check_out);
+         const timeDiff = Math.abs(
+            checkOutDate.getTime() - checkInDate.getTime()
+         );
+         const nights = Math.ceil(timeDiff / (1000 * 3600 * 24));
+
+         const taxRate = 0.1;
+         const total = parseFloat(price_per_night) * nights;
+         const tax = total * taxRate;
+         const service_fee = total * 0.05;
+         const grand_total = total + tax + service_fee;
+
          const booking = await BookingModel.createBooking({
             id,
             user_id,
             room_id,
             check_in,
             check_out,
-            total_amount,
+            total_amount: grand_total,
             booking_reference,
          });
          if (!booking) {

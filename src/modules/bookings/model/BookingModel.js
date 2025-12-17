@@ -73,7 +73,7 @@ class BookingModel {
             h.name AS hotel_name,
             h.description AS hotel_description,
             h.location AS hotel_location,
-            h.profile_pic_url AS logo_url,
+            h.profile_pic_url AS hotel_profile_pic_url,
             h.contact_info AS hotel_contact_number,
             u.id AS user_id,
             u.first_name,
@@ -135,6 +135,7 @@ class BookingModel {
                location: booking.hotel_location,
                description: booking.hotel_description,
                contact_number: booking.hotel_contact_number,
+               hotel_profile_pic_url: booking.hotel_profile_pic_url,
             },
             user: {
                id: booking.user_id,

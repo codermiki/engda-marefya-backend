@@ -20,7 +20,7 @@ export const initiatePayment = async (req, res, next) => {
          );
       }
 
-      const payment = await PaymentService.createPayment(user_id, booking_id);
+      const payment = await PaymentService.createPayment(booking_id);
 
       return successResponse(res, {
          message: "Payment initiated successfully",

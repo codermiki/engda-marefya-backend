@@ -7,7 +7,7 @@ import PaymentModel from "../model/PaymentModel.js";
 
 export class PaymentService {
    // Create payment service
-   static async createPayment(user_id, booking_id) {
+   static async createPayment(booking_id) {
       // Get booking details
       const booking = await BookingModel.getBookingDetails(booking_id);
 
