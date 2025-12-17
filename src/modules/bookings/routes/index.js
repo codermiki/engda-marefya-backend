@@ -29,7 +29,7 @@ router.post(
 router.get("/:id", verifyToken, getBookingDetails);
 
 // Cancel booking
-router.post("/:id/cancel", verifyToken, cancelBooking);
+router.delete("/:id", verifyToken, cancelBooking);
 
 // Get user bookings
 router.get("/user/:id", verifyToken, getUserBookings);

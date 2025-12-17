@@ -687,7 +687,6 @@ class HotelModel {
          const [rows] = await pool.execute(query, values);
          return rows;
       } catch (error) {
-         console.log(error);
          if (error instanceof AppError) {
             throw error;
          }
@@ -762,7 +761,6 @@ class HotelModel {
 
          return roomTypeRows[0].count;
       } catch (error) {
-         console.log(error);
          if (error instanceof AppError) {
             throw error;
          }

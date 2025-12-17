@@ -66,13 +66,20 @@ class BookingModel {
             rt.id AS room_type_id,
             rt.name AS room_type_name,
             rt.price_per_night,
+            rt.bed_type,
+            rt.number_of_beds,
+            rt.description AS room_type_description,
             h.id AS hotel_id,
             h.name AS hotel_name,
+            h.description AS hotel_description,
             h.location AS hotel_location,
+            h.profile_pic_url AS logo_url,
+            h.contact_info AS hotel_contact_number,
             u.id AS user_id,
             u.first_name,
             u.last_name,
-            u.email
+            u.email,
+            u.profile_pic_url
          FROM
             bookings b
          JOIN
@@ -116,18 +123,25 @@ class BookingModel {
                   id: booking.room_type_id,
                   name: booking.room_type_name,
                   price_per_night: parseFloat(booking.price_per_night),
+                  bed_type: booking.bed_type,
+                  number_of_beds: booking.number_of_beds,
+                  description: booking.room_type_description,
                },
             },
             hotel: {
                id: booking.hotel_id,
                name: booking.hotel_name,
+               logo_url: booking.logo_url,
                location: booking.hotel_location,
+               description: booking.hotel_description,
+               contact_number: booking.hotel_contact_number,
             },
             user: {
                id: booking.user_id,
                first_name: booking.first_name,
                last_name: booking.last_name,
                email: booking.email,
+               profile_pic_url: booking.profile_pic_url,
             },
             check_in: booking.check_in,
             check_out: booking.check_out,
@@ -183,7 +197,7 @@ class BookingModel {
 
    // Cancel booking
    static async cancelBooking(id) {
-      const query = `UPDATE bookings SET status = 'cancelled' WHERE id = ?`;
+      const query = `DELETE FROM bookings WHERE id = ?`;
 
       try {
          const [result] = await pool.execute(query, [id]);
@@ -239,10 +253,6 @@ class BookingModel {
 
       try {
          const [rows] = await pool.execute(query, values);
-
-         if (rows.length === 0) {
-            return null;
-         }
 
          return rows;
       } catch (error) {
@@ -388,6 +398,26 @@ class BookingModel {
                );
             }
          }
+         throw new AppError(
+            "Internal server error",
+            HTTP_STATUS.INTERNAL_SERVER_ERROR
+         );
+      }
+   }
+
+   // Update booking status with booking reference
+   static async updateBookingStatusWithBookingReference(reference, status) {
+      const query = `UPDATE bookings SET status = ? WHERE booking_reference = ?`;
+      const values = [status, reference];
+
+      try {
+         const [result] = await pool.execute(query, values);
+         if (result.affectedRows === 0) {
+            return null;
+         }
+
+         return { reference, status };
+      } catch (error) {
          throw new AppError(
             "Internal server error",
             HTTP_STATUS.INTERNAL_SERVER_ERROR

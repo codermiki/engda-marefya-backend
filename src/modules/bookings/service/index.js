@@ -71,13 +71,25 @@ export class BookingService {
    // Cancel booking service
    static async cancelBooking(id) {
       try {
-         const booking = await BookingModel.cancelBooking(id);
-
+         const booking = await BookingModel.getBookingDetails(id);
          if (!booking) {
             throw new AppError("Booking not found.", HTTP_STATUS.NOT_FOUND);
          }
 
-         return booking;
+         if (booking.status !== "pending") {
+            throw new AppError(
+               "Booking cannot be cancelled.",
+               HTTP_STATUS.BAD_REQUEST
+            );
+         }
+
+         const cancelledBooking = await BookingModel.cancelBooking(id);
+
+         if (!cancelledBooking) {
+            throw new AppError("Booking not found.", HTTP_STATUS.NOT_FOUND);
+         }
+
+         return cancelledBooking;
       } catch (error) {
          // Re-throw AppError instances, otherwise wrap in AppError
          if (error instanceof AppError) {
@@ -102,7 +114,7 @@ export class BookingService {
          const totalBookings = await BookingModel.countUserBookings(id, status);
          const totalPages = Math.ceil(totalBookings / limit);
          // page should not exceed total pages
-         if (page > totalPages) {
+         if (page > totalPages && page != 1) {
             throw new AppError("Page not found.", HTTP_STATUS.NOT_FOUND);
          }
 
@@ -112,10 +124,6 @@ export class BookingService {
             page,
             limit
          );
-
-         if (!bookings) {
-            throw new AppError("User not found.", HTTP_STATUS.NOT_FOUND);
-         }
 
          // prepare pagination
          const pagination = {
@@ -261,6 +269,31 @@ export class BookingService {
 
          throw new AppError(
             "Failed to add review to booking. Please try again.",
+            HTTP_STATUS.INTERNAL_SERVER_ERROR
+         );
+      }
+   }
+
+   // Update booking status with booking reference
+   static async updateBookingStatusWithBookingReference(reference, status) {
+      try {
+         const booking =
+            await BookingModel.updateBookingStatusWithBookingReference(
+               reference,
+               status
+            );
+         if (!booking) {
+            throw new AppError("Booking not found.", HTTP_STATUS.NOT_FOUND);
+         }
+         return booking;
+      } catch (error) {
+         // Re-throw AppError instances, otherwise wrap in AppError
+         if (error instanceof AppError) {
+            throw error;
+         }
+
+         throw new AppError(
+            "Failed to update booking status. Please try again.",
             HTTP_STATUS.INTERNAL_SERVER_ERROR
          );
       }

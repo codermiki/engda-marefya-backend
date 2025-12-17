@@ -1,6 +1,7 @@
 import { HTTP_STATUS } from "../../../constants/http.js";
 import AppError from "../../../utils/AppError.js";
 import { successResponse } from "../../../utils/responseFormatter.js";
+import { BookingService } from "../../bookings/service/index.js";
 import { PaymentService } from "../service/index.js";
 import crypto from "crypto";
 
@@ -81,6 +82,18 @@ export const webhookPayment = async (req, res, next) => {
          if (!payment) {
             return res.status(500).send();
          }
+         // update booking status
+         if (status === "success") {
+            const booking =
+               await BookingService.updateBookingStatusWithBookingReference(
+                  tx_ref,
+                  "paid"
+               );
+            if (!booking) {
+               return res.status(500).send();
+            }
+         }
+
          return res.status(200).send();
       }
 
