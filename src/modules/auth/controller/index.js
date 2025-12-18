@@ -90,6 +90,29 @@ export const loginUser = async (req, res, next) => {
    }
 };
 
+// Logout user controller
+export const logoutUser = async (req, res, next) => {
+   try {
+      const user_id = req?.user?.id;
+      if (!user_id) {
+         throw new AppError(
+            "Authentication required",
+            HTTP_STATUS.UNAUTHORIZED
+         );
+      }
+
+      const result = await AuthService.logoutUser(user_id);
+
+      return successResponse(res, {
+         message: "User logout successful",
+         data: result,
+         statusCode: HTTP_STATUS.OK,
+      });
+   } catch (error) {
+      next(error);
+   }
+};
+
 // Refresh Token controller
 export const refreshToken = async (req, res, next) => {
    try {

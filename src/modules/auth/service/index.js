@@ -203,7 +203,7 @@ export class AuthService {
                type: "refresh",
             },
             {
-               expiresIn: "7d",
+               expiresIn: "30d",
             }
          );
 
@@ -218,7 +218,7 @@ export class AuthService {
                type: "access",
             },
             {
-               expiresIn: "1h",
+               expiresIn: "15m",
             }
          );
 
@@ -248,6 +248,38 @@ export class AuthService {
 
          throw new AppError(
             "Login failed. Please try again.",
+            HTTP_STATUS.INTERNAL_SERVER_ERROR
+         );
+      }
+   }
+
+   // Logout user service
+   static async logoutUser(user_id) {
+      try {
+         // Find user by ID
+         const user = await UserModel.findById(user_id);
+         if (!user) {
+            throw new AppError("User not found", HTTP_STATUS.NOT_FOUND);
+         }
+
+         // Delete refresh token
+         const result = await UserModel.deleteRefreshToken(user_id);
+         if (!result) {
+            throw new AppError(
+               "Logout failed. Please try again.",
+               HTTP_STATUS.INTERNAL_SERVER_ERROR
+            );
+         }
+
+         return result;
+      } catch (error) {
+         // Re-throw AppError instances, otherwise wrap in AppError
+         if (error instanceof AppError) {
+            throw error;
+         }
+
+         throw new AppError(
+            "Logout failed. Please try again.",
             HTTP_STATUS.INTERNAL_SERVER_ERROR
          );
       }
@@ -291,15 +323,21 @@ export class AuthService {
          }
 
          // Generate access token using JWTUtils
-         const accessToken = JWTUtils.createToken({
-            id: user.id,
-            email: user.email,
-            role: user.role,
-            type: "access",
-         });
+         const accessToken = JWTUtils.createToken(
+            {
+               id: user.id,
+               email: user.email,
+               role: user.role,
+               type: "access",
+            },
+            {
+               expiresIn: "15m",
+            }
+         );
 
          return {
             access_token: accessToken,
+            refresh_token,
          };
       } catch (error) {
          // Re-throw AppError instances, otherwise wrap in AppError

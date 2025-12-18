@@ -476,17 +476,20 @@ export const checkIfRoomTypeInWishlist = async (req, res, next) => {
    }
 };
 
-// Get reviews for a room type
+// Get reviews for a room type with pagination with sorting
 export const getRoomTypeReviews = async (req, res, next) => {
    try {
       const id = req.params?.id;
+      const page = req?.query?.page;
+      const limit = req?.query?.limit;
+      const sort = req?.query?.sort;
       if (!id) {
          throw new AppError(
             "Room type id is required",
             HTTP_STATUS.BAD_REQUEST
          );
       }
-      const data = await HotelService.getRoomTypeReviews(id);
+      const data = await HotelService.getRoomTypeReviews(id, page, limit, sort);
 
       return successResponse(res, {
          message: "Room type reviews fetched successfully",

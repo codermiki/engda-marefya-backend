@@ -16,7 +16,7 @@ class JWTUtils {
    static createToken(payload, options = {}) {
       try {
          const {
-            expiresIn = process.env.JWT_EXPIRES_IN || "7d",
+            expiresIn = process.env.JWT_EXPIRES_IN || "30d",
             secret = process.env.JWT_SECRET,
          } = options;
 
@@ -79,6 +79,11 @@ class JWTUtils {
                "JWT secret is not configured",
                HTTP_STATUS.INTERNAL_SERVER_ERROR
             );
+         }
+
+         // Extract token from Bearer token
+         if (token.startsWith("Bearer ")) {
+            token = token.slice(7).trim();
          }
 
          // Verify token

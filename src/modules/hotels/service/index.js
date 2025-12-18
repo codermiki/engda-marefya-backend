@@ -650,11 +650,37 @@ export class HotelService {
    }
 
    // Get reviews for a room type
-   static async getRoomTypeReviews(roomTypeId) {
+   static async getRoomTypeReviews(
+      roomTypeId,
+      page = PAGINATION.DEFAULT_PAGE,
+      limit = PAGINATION.DEFAULT_LIMIT,
+      sort = "createdAt:desc"
+   ) {
       try {
-         const reviews = await HotelModel.getRoomTypeReviews(roomTypeId);
+         const totalReviews = await HotelModel.countRoomTypeReviews(roomTypeId);
+         const totalPages = Math.ceil(totalReviews / limit);
 
-         return reviews;
+         // page should not exced from the totalPages
+         if (page > totalPages && page > 1) {
+            throw new AppError("Page not found.", HTTP_STATUS.NOT_FOUND);
+         }
+
+         const reviews = await HotelModel.getRoomTypeReviews(
+            roomTypeId,
+            page,
+            limit,
+            sort
+         );
+
+         // prepare pagination
+         const pagination = {
+            page,
+            limit,
+            total: totalReviews,
+            total_pages: totalPages,
+         };
+
+         return { reviews, pagination };
       } catch (error) {
          if (error instanceof AppError) {
             throw error;

@@ -961,7 +961,19 @@ class HotelModel {
    }
 
    // Get reviews for a room type
-   static async getRoomTypeReviews(roomTypeId) {
+   static async getRoomTypeReviews(roomTypeId, page, limit, sort) {
+      const SORT_MAP = {
+         relevant: "r.rating DESC, r.created_at DESC",
+         newest: "r.created_at DESC",
+         oldest: "r.created_at ASC",
+         highest: "r.rating DESC",
+         lowest: "r.rating ASC",
+      };
+      const orderBy = SORT_MAP[sort] || SORT_MAP.relevant;
+      const parsedPage = parseInt(page);
+      const parsedLimit = parseInt(limit);
+      const offset = (parsedPage - 1) * parsedLimit;
+
       const query = `
          SELECT r.id, r.rating, r.comment, u.id as user_id, u.first_name, u.last_name, u.profile_pic_url, r.created_at, r.updated_at
          FROM reviews r
@@ -969,11 +981,36 @@ class HotelModel {
          JOIN bookings b ON r.booking_id = b.id
          JOIN users u ON b.user_id = u.id
          WHERE rt.id = ?
+         ORDER BY ${orderBy}
+         LIMIT ${parsedLimit} OFFSET ${offset}
       `;
       try {
          const [rows] = await pool.execute(query, [roomTypeId]);
 
          return rows;
+      } catch (error) {
+         if (error instanceof AppError) {
+            throw error;
+         }
+         throw new AppError(
+            "Internal server error",
+            HTTP_STATUS.INTERNAL_SERVER_ERROR
+         );
+      }
+   }
+
+   // Count reviews for a room type
+   static async countRoomTypeReviews(roomTypeId) {
+      const query = `
+         SELECT COUNT(*) as count
+         FROM reviews r
+         JOIN room_types rt ON r.room_type_id = rt.id
+         WHERE rt.id = ?
+      `;
+      try {
+         const [rows] = await pool.execute(query, [roomTypeId]);
+
+         return rows[0].count;
       } catch (error) {
          if (error instanceof AppError) {
             throw error;

@@ -280,8 +280,9 @@ class BookingModel {
          query += ` AND b.status = ?`;
          values.push(status);
       }
-      const offset = (page - 1) * limit;
+      query += ` ORDER BY b.created_at DESC`;
 
+      const offset = (page - 1) * limit;
       query += ` LIMIT ${Number(limit)} OFFSET ${Number(offset)}`;
 
       try {

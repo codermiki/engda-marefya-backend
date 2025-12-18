@@ -11,10 +11,12 @@ import {
    registerHotelOwner,
    verifyEmail,
    loginUser,
+   logoutUser,
    forgotPassword,
    resetPassword,
    refreshToken,
 } from "../controller/index.js";
+import { verifyToken } from "../../../middlewares/authMiddleware.js";
 
 const router = Router();
 
@@ -39,6 +41,9 @@ router.get("/verify-email", verifyEmail);
 
 // Login user route
 router.post("/login", loginValidation, handleValidationErrors, loginUser);
+
+// Logout user route
+router.post("/logout", verifyToken, logoutUser);
 
 // Forgot Password route
 router.post("/forgot-password", forgotPassword);
