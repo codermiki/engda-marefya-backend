@@ -5,39 +5,21 @@ import { successResponse } from "../../../utils/responseFormatter.js";
 import { AuthService } from "../service/index.js";
 
 // Register customer controller
-export const registerCustomer = async (req, res, next) => {
+export const register = async (req, res, next) => {
    try {
-      const { first_name, last_name, email, password, phone_number } = req.body;
+      const { first_name, last_name, email, password, phone_number, role } =
+         req.body;
+      if (![USER_ROLES.CUSTOMER, USER_ROLES.HOTEL_OWNER].includes(role)) {
+         throw new AppError("Invalid role", HTTP_STATUS.BAD_REQUEST);
+      }
+
       const data = await AuthService.registerUser({
          first_name,
          last_name,
          email,
          password,
          phone_number,
-         role: USER_ROLES.CUSTOMER,
-      });
-
-      return successResponse(res, {
-         message: "User created successfully. Verification email sent.",
-         data: { user: data },
-         statusCode: HTTP_STATUS.CREATED,
-      });
-   } catch (error) {
-      next(error);
-   }
-};
-
-// Register hotel owner controller
-export const registerHotelOwner = async (req, res, next) => {
-   try {
-      let { first_name, last_name, email, password, phone_number } = req.body;
-      const data = await AuthService.registerUser({
-         first_name,
-         last_name,
-         email,
-         password,
-         phone_number,
-         role: USER_ROLES.HOTEL_OWNER,
+         role,
       });
 
       return successResponse(res, {
@@ -53,7 +35,7 @@ export const registerHotelOwner = async (req, res, next) => {
 // Verify Email controller
 export const verifyEmail = async (req, res, next) => {
    try {
-      const { token } = req.query;
+      const { token } = req?.body;
 
       if (!token) {
          throw new AppError(

@@ -44,6 +44,12 @@ export const registerValidation = [
    body("phone_number")
       .isMobilePhone()
       .withMessage("Valid phone number is required"),
+
+   body("role")
+      .notEmpty()
+      .withMessage("Role is required")
+      .isIn(["customer", "hotel_owner"])
+      .withMessage("Invalid role"),
 ];
 
 // Update user profile validation all fields are optional but one field is required to update
@@ -90,7 +96,7 @@ export const createHotelValidation = [
       .notEmpty()
       .withMessage("Hotel contact info is required"),
    body("description").notEmpty().withMessage("Hotel description is required"),
-   body("business_license")
+   body("business_license_url")
       .notEmpty()
       .withMessage("Hotel business license is required"),
    body("profile_pic_url")
@@ -217,4 +223,13 @@ export const addReviewToBookingValidation = [
       .withMessage("Rating is required")
       .isInt({ min: 1, max: 5 }),
    body("comment").isString().notEmpty().withMessage("Comment is required"),
+];
+
+// Add bank details validation
+export const addBankDetailsValidation = [
+   body("bank_name").notEmpty().withMessage("Bank name is required"),
+   body("account_number").notEmpty().withMessage("Account number is required"),
+   body("account_holder_name")
+      .notEmpty()
+      .withMessage("Account holder name is required"),
 ];

@@ -11,7 +11,7 @@ export const createHotel = async (req, res, next) => {
          location,
          contact_info,
          description,
-         business_license,
+         business_license_url,
          profile_pic_url,
       } = req?.body;
 
@@ -20,7 +20,7 @@ export const createHotel = async (req, res, next) => {
          !location ||
          !contact_info ||
          !description ||
-         !business_license ||
+         !business_license_url ||
          !profile_pic_url
       ) {
          throw new AppError("All fields are required", HTTP_STATUS.BAD_REQUEST);
@@ -37,7 +37,7 @@ export const createHotel = async (req, res, next) => {
          location,
          contact_info,
          description,
-         business_license,
+         business_license_url,
          profile_pic_url,
       });
 
@@ -493,6 +493,85 @@ export const getRoomTypeReviews = async (req, res, next) => {
 
       return successResponse(res, {
          message: "Room type reviews fetched successfully",
+         data,
+         statusCode: HTTP_STATUS.OK,
+      });
+   } catch (error) {
+      next(error);
+   }
+};
+
+// Get user wishlist
+export const getUserWishlist = async (req, res, next) => {
+   try {
+      const userId = req?.user?.id;
+      if (!userId) {
+         throw new AppError(
+            "Authentication required",
+            HTTP_STATUS.UNAUTHORIZED
+         );
+      }
+      const data = await HotelService.getUserWishlist(userId);
+
+      return successResponse(res, {
+         message: "User wishlist fetched successfully",
+         data,
+         statusCode: HTTP_STATUS.OK,
+      });
+   } catch (error) {
+      next(error);
+   }
+};
+
+// Add bank details
+export const addBankDetails = async (req, res, next) => {
+   try {
+      const userId = req?.user?.id;
+      const hotel_id = req.params?.id;
+      const { bank_name, account_number, account_holder_name } = req.body;
+
+      if (!userId) {
+         throw new AppError(
+            "Authentication required",
+            HTTP_STATUS.UNAUTHORIZED
+         );
+      }
+
+      if (!hotel_id) {
+         throw new AppError("Hotel ID is required", HTTP_STATUS.BAD_REQUEST);
+      }
+
+      const data = await HotelService.addBankDetails(
+         hotel_id,
+         bank_name,
+         account_number,
+         account_holder_name
+      );
+
+      return successResponse(res, {
+         message: "Bank details added successfully",
+         data,
+         statusCode: HTTP_STATUS.CREATED,
+      });
+   } catch (error) {
+      next(error);
+   }
+};
+
+// Get my hotels
+export const getMyHotels = async (req, res, next) => {
+   try {
+      const userId = req?.user?.id;
+      if (!userId) {
+         throw new AppError(
+            "Authentication required",
+            HTTP_STATUS.UNAUTHORIZED
+         );
+      }
+      const data = await HotelService.getMyHotels(userId);
+
+      return successResponse(res, {
+         message: "User hotels fetched successfully",
          data,
          statusCode: HTTP_STATUS.OK,
       });

@@ -12,7 +12,7 @@ class HotelModel {
          location,
          contact_info,
          description,
-         business_license,
+         business_license_url,
          profile_pic_url,
       } = hotelData;
       const query = `INSERT INTO hotels (id, owner_id, name, location, contact_info, description, business_license, profile_pic_url)
@@ -24,7 +24,7 @@ class HotelModel {
          location,
          contact_info,
          description,
-         business_license,
+         business_license_url,
          profile_pic_url,
       ];
 
@@ -1011,6 +1011,106 @@ class HotelModel {
          const [rows] = await pool.execute(query, [roomTypeId]);
 
          return rows[0].count;
+      } catch (error) {
+         if (error instanceof AppError) {
+            throw error;
+         }
+         throw new AppError(
+            "Internal server error",
+            HTTP_STATUS.INTERNAL_SERVER_ERROR
+         );
+      }
+   }
+
+   // Get user wishlist
+   static async getUserWishlist(userId) {
+      const query = `
+         SELECT 
+            rt.*,
+            h.name AS hotel_name,
+            h.location AS hotel_location,
+            COUNT(r.id) AS reviews_count,
+            ROUND(COALESCE(AVG(r.rating), 0), 1) AS average_rating
+         FROM room_types rt
+         JOIN hotels h 
+            ON rt.hotel_id = h.id
+         JOIN wishlists w 
+            ON w.room_type_id = rt.id
+         LEFT JOIN reviews r 
+            ON rt.id = r.room_type_id
+         WHERE w.user_id = ?
+         GROUP BY rt.id, h.id
+         ORDER BY rt.created_at DESC;
+      `;
+      try {
+         const [rows] = await pool.execute(query, [userId]);
+
+         return rows;
+      } catch (error) {
+         if (error instanceof AppError) {
+            throw error;
+         }
+         throw new AppError(
+            "Internal server error",
+            HTTP_STATUS.INTERNAL_SERVER_ERROR
+         );
+      }
+   }
+
+   // Get user hotels
+   static async getMyHotels(userId) {
+      const query = `
+         SELECT 
+            h.*,
+            hd.bank_name,
+            hd.account_number,
+            hd.account_holder_name,
+            COUNT(rt.id) AS room_types_count,
+            COUNT(r.id) AS reviews_count,
+            ROUND(COALESCE(AVG(r.rating), 0), 1) AS average_rating
+         FROM hotels h
+         LEFT JOIN hotel_bank_details hd ON h.id = hd.hotel_id
+         LEFT JOIN room_types rt ON h.id = rt.hotel_id
+         LEFT JOIN reviews r ON rt.id = r.room_type_id
+         WHERE h.owner_id = ?
+         GROUP BY h.id
+         ORDER BY h.created_at DESC;
+      `;
+      try {
+         const [rows] = await pool.execute(query, [userId]);
+         if (rows.length === 0) {
+            throw new AppError("No hotels found", HTTP_STATUS.NOT_FOUND);
+         }
+
+         return rows[0];
+      } catch (error) {
+         if (error instanceof AppError) {
+            throw error;
+         }
+         throw new AppError(
+            "Internal server error",
+            HTTP_STATUS.INTERNAL_SERVER_ERROR
+         );
+      }
+   }
+
+   // Add bank details
+   static async addBankDetails(
+      hotelId,
+      bankName,
+      accountNumber,
+      accountHolderName
+   ) {
+      const query = `INSERT INTO hotel_bank_details (hotel_id, bank_name, account_number, account_holder_name)
+         VALUES (?, ?, ?, ?)`;
+      const values = [hotelId, bankName, accountNumber, accountHolderName];
+      try {
+         const [result] = await pool.execute(query, values);
+         if (result.affectedRows === 0) {
+            return null;
+         }
+
+         return { hotelId, bankName, accountNumber, accountHolderName };
       } catch (error) {
          if (error instanceof AppError) {
             throw error;

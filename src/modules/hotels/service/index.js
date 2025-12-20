@@ -12,7 +12,7 @@ export class HotelService {
       location,
       contact_info,
       description,
-      business_license,
+      business_license_url,
       profile_pic_url,
    }) {
       try {
@@ -26,7 +26,7 @@ export class HotelService {
             location,
             contact_info,
             description,
-            business_license,
+            business_license_url,
             profile_pic_url,
          });
          if (!newHotel) {
@@ -688,6 +688,76 @@ export class HotelService {
 
          throw new AppError(
             "Failed to retrieve room type reviews. Please try again.",
+            HTTP_STATUS.INTERNAL_SERVER_ERROR
+         );
+      }
+   }
+
+   // Get user wishlist
+   static async getUserWishlist(userId) {
+      try {
+         const wishlist = await HotelModel.getUserWishlist(userId);
+
+         return wishlist;
+      } catch (error) {
+         if (error instanceof AppError) {
+            throw error;
+         }
+
+         throw new AppError(
+            "Failed to retrieve user wishlist. Please try again.",
+            HTTP_STATUS.INTERNAL_SERVER_ERROR
+         );
+      }
+   }
+
+   // Get user hotels
+   static async getMyHotels(userId) {
+      try {
+         const hotels = await HotelModel.getMyHotels(userId);
+
+         return hotels;
+      } catch (error) {
+         if (error instanceof AppError) {
+            throw error;
+         }
+
+         throw new AppError(
+            "Failed to retrieve user hotels. Please try again.",
+            HTTP_STATUS.INTERNAL_SERVER_ERROR
+         );
+      }
+   }
+
+   // Add bank details
+   static async addBankDetails(
+      hotelId,
+      bankName,
+      accountNumber,
+      accountHolderName
+   ) {
+      try {
+         const bankDetails = await HotelModel.addBankDetails(
+            hotelId,
+            bankName,
+            accountNumber,
+            accountHolderName
+         );
+         if (!bankDetails) {
+            throw new AppError(
+               "Failed to add bank details. Please try again.",
+               HTTP_STATUS.INTERNAL_SERVER_ERROR
+            );
+         }
+
+         return bankDetails;
+      } catch (error) {
+         if (error instanceof AppError) {
+            throw error;
+         }
+
+         throw new AppError(
+            "Failed to add bank details. Please try again.",
             HTTP_STATUS.INTERNAL_SERVER_ERROR
          );
       }

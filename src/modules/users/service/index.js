@@ -3,6 +3,7 @@ import AppError from "../../../utils/AppError.js";
 import UserModel from "../../auth/model/UserModel.js";
 
 export class UserService {
+   // get user profile service
    static async getUserProfile(id) {
       try {
          const user = await UserModel.findById(id);
@@ -36,6 +37,7 @@ export class UserService {
       }
    }
 
+   // update user profile service
    static async updateUserProfile(id, userData) {
       try {
          const user = await UserModel.findById(id);

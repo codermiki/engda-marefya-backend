@@ -19,6 +19,9 @@ import {
    checkIfRoomTypeInWishlist,
    toggleWishlist,
    getRoomTypeReviews,
+   getUserWishlist,
+   addBankDetails,
+   getMyHotels,
 } from "../controller/index.js";
 import {
    verifyToken,
@@ -37,9 +40,18 @@ import {
    updateHotelValidation,
    updateRoomTypeRoomStatusValidation,
    updateRoomTypeValidation,
+   addBankDetailsValidation,
 } from "../../../middlewares/validation.js";
 
 const router = Router();
+
+// Get hotels by owner id
+router.get(
+   "/me",
+   verifyToken,
+   requireRole(["hotel_owner", "admin"]),
+   getMyHotels
+);
 
 // Get all hotels with pagination and search
 router.get("/", getAllHotels);
@@ -63,6 +75,17 @@ router.post(
    createHotelValidation,
    handleValidationErrors,
    createHotel
+);
+
+// Add Bank details
+router.post(
+   "/:id/bank-details",
+   verifyToken,
+   requireRole(["hotel_owner"]),
+   requireHotelOwnership(["admin"]),
+   addBankDetailsValidation,
+   handleValidationErrors,
+   addBankDetails
 );
 
 // Update hotel info
@@ -117,6 +140,9 @@ router.post("/room-types/:id/wishlist", verifyToken, toggleWishlist);
 
 // Is room type in wishlist
 router.get("/room-types/:id/wishlist", verifyToken, checkIfRoomTypeInWishlist);
+
+// Get user wishlist
+router.get("/user/wishlist", verifyToken, getUserWishlist);
 
 // Get reviews for a room type
 router.get("/room-types/:id/reviews", getRoomTypeReviews);

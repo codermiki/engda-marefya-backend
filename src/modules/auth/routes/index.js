@@ -7,8 +7,7 @@ import {
    refreshTokenValidation,
 } from "../../../middlewares/validation.js";
 import {
-   registerCustomer,
-   registerHotelOwner,
+   register,
    verifyEmail,
    loginUser,
    logoutUser,
@@ -21,23 +20,10 @@ import { verifyToken } from "../../../middlewares/authMiddleware.js";
 const router = Router();
 
 // Register customer route
-router.post(
-   "/register/customer",
-   registerValidation,
-   handleValidationErrors,
-   registerCustomer
-);
-
-// Register Hotel Owner route
-router.post(
-   "/register/hotel-owner",
-   registerValidation,
-   handleValidationErrors,
-   registerHotelOwner
-);
+router.post("/register", registerValidation, handleValidationErrors, register);
 
 // Verify Email route
-router.get("/verify-email", verifyEmail);
+router.post("/verify-email", verifyEmail);
 
 // Login user route
 router.post("/login", loginValidation, handleValidationErrors, loginUser);
