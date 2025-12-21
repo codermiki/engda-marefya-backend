@@ -477,7 +477,7 @@ export const getRoomTypeReviews = async (req, res, next) => {
       const id = req.params?.id;
       const page = req?.query?.page;
       const limit = req?.query?.limit;
-      const sort = req?.query?.sort;
+      const sort = req?.query?.sort_by;
       if (!id) {
          throw new AppError(
             "Room type id is required",
