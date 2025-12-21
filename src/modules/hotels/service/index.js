@@ -644,7 +644,7 @@ export class HotelService {
       roomTypeId,
       page = PAGINATION.DEFAULT_PAGE,
       limit = PAGINATION.DEFAULT_LIMIT,
-      sort = "createdAt:desc"
+      sort = "relevant"
    ) {
       try {
          const totalReviews = await HotelModel.countRoomTypeReviews(roomTypeId);
