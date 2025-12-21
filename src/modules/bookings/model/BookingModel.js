@@ -321,7 +321,15 @@ class BookingModel {
    }
 
    // Get hotel bookings
-   static async getHotelBookings(id, status, page, limit) {
+   static async getHotelBookings(
+      id,
+      search,
+      check_in,
+      check_out,
+      status,
+      page,
+      limit
+   ) {
       let values = [id];
       let query = `SELECT
          b.id,
@@ -357,6 +365,25 @@ class BookingModel {
          users u ON b.user_id = u.id
       WHERE
          h.id = ?`;
+      if (search) {
+         query += ` AND (b.booking_reference LIKE ? OR h.name LIKE ? OR r.room_number LIKE ? OR u.first_name LIKE ? OR u.last_name LIKE ? OR u.email LIKE ?)`;
+         values.push(
+            `%${search}%`,
+            `%${search}%`,
+            `%${search}%`,
+            `%${search}%`,
+            `%${search}%`,
+            `%${search}%`
+         );
+      }
+      if (check_in) {
+         query += ` AND b.check_in = ?`;
+         values.push(check_in);
+      }
+      if (check_out) {
+         query += ` AND b.check_out = ?`;
+         values.push(check_out);
+      }
       if (status) {
          query += ` AND b.status = ?`;
          values.push(status);
@@ -368,10 +395,6 @@ class BookingModel {
       try {
          const [rows] = await pool.execute(query, values);
 
-         if (rows.length === 0) {
-            return null;
-         }
-
          return rows;
       } catch (error) {
          throw new AppError(
@@ -382,9 +405,35 @@ class BookingModel {
    }
 
    // Count hotel bookings
-   static async countHotelBookings(id, status) {
+   static async countHotelBookings(id, search, check_in, check_out, status) {
       let values = [id];
-      let query = `SELECT COUNT(*) AS count FROM bookings b JOIN rooms r ON b.room_id = r.id JOIN room_types rt ON r.room_type_id = rt.id JOIN hotels h ON rt.hotel_id = h.id WHERE h.id = ?`;
+      let query = `SELECT
+         COUNT(*) AS count 
+         FROM bookings b 
+         JOIN rooms r ON b.room_id = r.id 
+         JOIN room_types rt ON r.room_type_id = rt.id 
+         JOIN hotels h ON rt.hotel_id = h.id 
+         JOIN users u ON b.user_id = u.id 
+         WHERE h.id = ?`;
+      if (search) {
+         query += ` AND (b.booking_reference LIKE ? OR h.name LIKE ? OR r.room_number LIKE ? OR u.first_name LIKE ? OR u.last_name LIKE ? OR u.email LIKE ?)`;
+         values.push(
+            `%${search}%`,
+            `%${search}%`,
+            `%${search}%`,
+            `%${search}%`,
+            `%${search}%`,
+            `%${search}%`
+         );
+      }
+      if (check_in) {
+         query += ` AND b.check_in = ?`;
+         values.push(check_in);
+      }
+      if (check_out) {
+         query += ` AND b.check_out = ?`;
+         values.push(check_out);
+      }
       if (status) {
          query += ` AND b.status = ?`;
          values.push(status);

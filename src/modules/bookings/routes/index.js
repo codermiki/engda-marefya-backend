@@ -7,7 +7,11 @@ import {
    getHotelBookings,
    addReviewToBooking,
 } from "../controller/index.js";
-import { verifyToken } from "../../../middlewares/authMiddleware.js";
+import {
+   requireHotelOwnership,
+   requireRole,
+   verifyToken,
+} from "../../../middlewares/authMiddleware.js";
 import {
    addReviewToBookingValidation,
    createBookingValidation,
@@ -35,7 +39,13 @@ router.delete("/:id", verifyToken, cancelBooking);
 router.get("/user/:id", verifyToken, getUserBookings);
 
 // Get hotel bookings
-router.get("/hotel/:id", verifyToken, getHotelBookings);
+router.get(
+   "/hotel/:id",
+   verifyToken,
+   requireRole("hotel_owner"),
+   requireHotelOwnership("admin"),
+   getHotelBookings
+);
 
 // Add review to booking
 router.post(

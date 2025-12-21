@@ -210,6 +210,9 @@ class HotelModel {
          "description",
          "price_per_night",
          "main_image_url",
+         "main_image_public_id",
+         "bed_type",
+         "number_of_beds",
          "status",
       ];
 
@@ -443,18 +446,17 @@ class HotelModel {
    }
 
    // Add room type images
-   static async addRoomTypeImage(imageData) {
-      const { id, room_type_id, image_url, alt_text } = imageData;
-      const query = `INSERT INTO room_type_images (id, room_type_id, image_url, alt_text)
+   static async addRoomTypeImage(id, roomTypeId, image_url, image_public_id) {
+      const query = `INSERT INTO room_type_images (id, room_type_id, image_url, image_public_id)
         VALUES (?, ?, ?, ?)`;
-      const values = [id, room_type_id, image_url, alt_text];
+      const values = [id, roomTypeId, image_url, image_public_id];
       try {
          const [result] = await pool.execute(query, values);
          if (result.affectedRows === 0) {
             return null;
          }
 
-         return { ...imageData };
+         return { id, roomTypeId, image_url, image_public_id };
       } catch (error) {
          if (error.code === "ER_DUP_ENTRY") {
             throw new AppError(
@@ -471,7 +473,7 @@ class HotelModel {
 
    // get room types images
    static async getRoomTypeImages(roomTypeId) {
-      const query = `SELECT id, image_url, alt_text
+      const query = `SELECT id, image_url, image_public_id
           FROM room_type_images
           WHERE room_type_id = ?`;
       const values = [roomTypeId];
@@ -1111,6 +1113,223 @@ class HotelModel {
          }
 
          return { hotelId, bankName, accountNumber, accountHolderName };
+      } catch (error) {
+         if (error instanceof AppError) {
+            throw error;
+         }
+         throw new AppError(
+            "Internal server error",
+            HTTP_STATUS.INTERNAL_SERVER_ERROR
+         );
+      }
+   }
+
+   // Get all room types by hotel id
+   static async getAllRoomTypesByHotelId(hotelId) {
+      const query = `
+         SELECT 
+            rt.*,
+            COUNT(r.id) AS reviews_count,
+            ROUND(COALESCE(AVG(r.rating), 0), 1) AS average_rating
+         FROM room_types rt
+         LEFT JOIN reviews r ON rt.id = r.room_type_id
+         WHERE rt.hotel_id = ?
+         GROUP BY rt.id
+         ORDER BY rt.created_at DESC;
+      `;
+      try {
+         const [rows] = await pool.execute(query, [hotelId]);
+
+         return rows;
+      } catch (error) {
+         if (error instanceof AppError) {
+            throw error;
+         }
+         throw new AppError(
+            "Internal server error",
+            HTTP_STATUS.INTERNAL_SERVER_ERROR
+         );
+      }
+   }
+
+   // Delete room type amenities
+   static async deleteRoomTypeAmenities(roomTypeId, amenityId) {
+      const query = `DELETE FROM room_type_amenities WHERE room_type_id = ? AND amenity_id = ?`;
+      try {
+         const [result] = await pool.execute(query, [roomTypeId, amenityId]);
+         if (result.affectedRows === 0) {
+            return null;
+         }
+
+         return { roomTypeId, amenityId };
+      } catch (error) {
+         if (error instanceof AppError) {
+            throw error;
+         }
+         throw new AppError(
+            "Internal server error",
+            HTTP_STATUS.INTERNAL_SERVER_ERROR
+         );
+      }
+   }
+
+   // Delete room type room
+   static async deleteRoomTypeRoom(room_type_id, room_id) {
+      const query = `DELETE FROM rooms WHERE room_type_id = ? AND id = ?`;
+      try {
+         const [result] = await pool.execute(query, [room_type_id, room_id]);
+         if (result.affectedRows === 0) {
+            return null;
+         }
+
+         return { room_type_id, room_id };
+      } catch (error) {
+         if (error instanceof AppError) {
+            throw error;
+         }
+         throw new AppError(
+            "Internal server error",
+            HTTP_STATUS.INTERNAL_SERVER_ERROR
+         );
+      }
+   }
+
+   // Update bank details
+   static async updateBankDetails(
+      hotelId,
+      bankName,
+      accountNumber,
+      accountHolderName
+   ) {
+      const query = `UPDATE hotel_bank_details SET bank_name = ?, account_number = ?, account_holder_name = ? WHERE hotel_id = ?`;
+      try {
+         const [result] = await pool.execute(query, [
+            bankName,
+            accountNumber,
+            accountHolderName,
+            hotelId,
+         ]);
+         if (result.affectedRows === 0) {
+            return null;
+         }
+
+         return { hotelId, bankName, accountNumber, accountHolderName };
+      } catch (error) {
+         if (error instanceof AppError) {
+            throw error;
+         }
+         throw new AppError(
+            "Internal server error",
+            HTTP_STATUS.INTERNAL_SERVER_ERROR
+         );
+      }
+   }
+
+   // Get hotel analytics
+   static async getHotelAnalytics(hotelId) {
+      const query = `WITH
+            current_bookings AS (
+               SELECT
+                  COUNT(b.id) AS total_bookings,
+                  COALESCE(SUM(b.total_amount), 0) AS total_revenue
+               FROM room_types rt
+               JOIN rooms r ON r.room_type_id = rt.id
+               JOIN bookings b ON b.room_id = r.id
+               WHERE rt.hotel_id = ?
+               AND b.status = 'paid'
+               AND b.created_at >= CURDATE() - INTERVAL 30 DAY
+            ),
+
+            current_ratings AS (
+               SELECT
+                  ROUND(AVG(rv.rating), 1) AS avg_rating
+               FROM reviews rv
+               WHERE rv.hotel_id = ?
+               AND rv.created_at >= CURDATE() - INTERVAL 30 DAY
+            ),
+
+            previous_bookings AS (
+               SELECT
+                  COUNT(b.id) AS previous_total_bookings,
+                  COALESCE(SUM(b.total_amount), 0) AS previous_revenue
+               FROM room_types rt
+               JOIN rooms r ON r.room_type_id = rt.id
+               JOIN bookings b ON b.room_id = r.id
+               WHERE rt.hotel_id = ?
+               AND b.status = 'paid'
+               AND b.created_at >= CURDATE() - INTERVAL 60 DAY
+               AND b.created_at <  CURDATE() - INTERVAL 30 DAY
+            ),
+
+            previous_ratings AS (
+               SELECT
+                  ROUND(AVG(rv.rating), 1) AS previous_avg_rating
+               FROM reviews rv
+               WHERE rv.hotel_id = ?
+               AND rv.created_at >= CURDATE() - INTERVAL 60 DAY
+               AND rv.created_at <  CURDATE() - INTERVAL 30 DAY
+            )
+
+            SELECT
+               h.id AS hotel_id,
+               h.name AS hotel_name,
+
+               cb.total_bookings,
+               cb.total_revenue,
+
+               /* Booking % change */
+               CASE
+                  WHEN pb.previous_total_bookings = 0 THEN 0
+                  ELSE ROUND(
+                     ((cb.total_bookings - pb.previous_total_bookings) / pb.previous_total_bookings) * 100,
+                     2
+                  )
+               END AS booking_change_percent,
+
+               /* Revenue % change */
+               CASE
+                  WHEN pb.previous_revenue = 0 THEN 0
+                  ELSE ROUND(
+                     ((cb.total_revenue - pb.previous_revenue) / pb.previous_revenue) * 100,
+                     2
+                  )
+               END AS revenue_change_percent,
+
+               COALESCE(cr.avg_rating, 0) AS avg_rating,
+
+               /* Rating % change */
+               CASE
+                  WHEN pr.previous_avg_rating IS NULL
+                     OR pr.previous_avg_rating = 0
+                     OR cr.avg_rating IS NULL
+                  THEN 0
+                  ELSE ROUND(
+                     ((cr.avg_rating - pr.previous_avg_rating) / pr.previous_avg_rating) * 100,
+                     2
+                  )
+               END AS rating_change_percent
+
+            FROM hotels h
+            CROSS JOIN current_bookings cb
+            CROSS JOIN previous_bookings pb
+            CROSS JOIN current_ratings cr
+            CROSS JOIN previous_ratings pr
+            WHERE h.id = ?;
+         `;
+
+      try {
+         const [rows] = await pool.execute(query, [
+            hotelId,
+            hotelId,
+            hotelId,
+            hotelId,
+            hotelId,
+         ]);
+         if (rows.length === 0) {
+            return null;
+         }
+
+         return rows[0];
       } catch (error) {
          if (error instanceof AppError) {
             throw error;

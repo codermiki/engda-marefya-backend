@@ -162,7 +162,7 @@ export class HotelService {
                ? images.map((image) => ({
                     id: image.id,
                     image_url: image.image_url,
-                    alt_text: image.alt_text,
+                    image_public_id: image.image_public_id,
                  }))
                : [],
             amenities: amenities
@@ -226,7 +226,7 @@ export class HotelService {
    }
 
    // Add room type amenities
-   static async addRoomTypeAmenities({ roomTypeId, amenity_ids }) {
+   static async addRoomTypeAmenities(roomTypeId, amenity_ids) {
       try {
          let amenities = [];
          if (amenity_ids.length) {
@@ -267,7 +267,7 @@ export class HotelService {
    }
 
    // Add room type rooms
-   static async addRoomTypeRooms({ roomTypeId, room_numbers }) {
+   static async addRoomTypeRooms(roomTypeId, room_numbers) {
       try {
          let rooms = [];
          if (room_numbers.length) {
@@ -308,34 +308,24 @@ export class HotelService {
    }
 
    // Add room type images
-   static async addRoomTypeImages({ roomTypeId, images }) {
+   static async addRoomTypeImages(roomTypeId, image_url, image_public_id) {
       try {
-         let newImages = [];
-         if (images.length) {
-            const promises = images.map(async (image) => {
-               // Generate Object Id
-               const id = generateId();
-               const newImage = await HotelModel.addRoomTypeImage({
-                  id,
-                  room_type_id: roomTypeId,
-                  image_url: image.image_url,
-                  alt_text: image.alt_text,
-               });
-               if (newImage) {
-                  return newImage;
-               }
-            });
+         // Generate Object Id
+         const id = generateId();
 
-            newImages = await Promise.all(promises);
-         }
-         if (!newImages) {
+         const newImage = await HotelModel.addRoomTypeImage(
+            id,
+            roomTypeId,
+            image_url,
+            image_public_id
+         );
+         if (!newImage) {
             throw new AppError(
                "Failed to add room type images.",
                HTTP_STATUS.INTERNAL_SERVER_ERROR
             );
          }
-
-         return { images: newImages };
+         return newImage;
       } catch (error) {
          // Re-throw AppError instances, otherwise wrap in AppError
          if (error instanceof AppError) {
@@ -758,6 +748,175 @@ export class HotelService {
 
          throw new AppError(
             "Failed to add bank details. Please try again.",
+            HTTP_STATUS.INTERNAL_SERVER_ERROR
+         );
+      }
+   }
+
+   // Get all room types by hotel id
+   static async getAllRoomTypesByHotelId(hotelId) {
+      try {
+         const roomTypes = await HotelModel.getAllRoomTypesByHotelId(hotelId);
+
+         return { room_types: roomTypes };
+      } catch (error) {
+         if (error instanceof AppError) {
+            throw error;
+         }
+
+         throw new AppError(
+            "Failed to retrieve room types. Please try again.",
+            HTTP_STATUS.INTERNAL_SERVER_ERROR
+         );
+      }
+   }
+
+   // Get room type images
+   static async getRoomTypeImages(roomTypeId) {
+      try {
+         const images = await HotelModel.getRoomTypeImages(roomTypeId);
+
+         return { images };
+      } catch (error) {
+         if (error instanceof AppError) {
+            throw error;
+         }
+
+         throw new AppError(
+            "Failed to retrieve room type images. Please try again.",
+            HTTP_STATUS.INTERNAL_SERVER_ERROR
+         );
+      }
+   }
+
+   // Get room type rooms
+   static async getRoomTypeRooms(roomTypeId) {
+      try {
+         const rooms = await HotelModel.getRoomTypeRooms(roomTypeId);
+
+         return rooms;
+      } catch (error) {
+         if (error instanceof AppError) {
+            throw error;
+         }
+
+         throw new AppError(
+            "Failed to retrieve room type rooms. Please try again.",
+            HTTP_STATUS.INTERNAL_SERVER_ERROR
+         );
+      }
+   }
+
+   // Get room type amenities
+   static async getRoomTypeAmenities(roomTypeId) {
+      try {
+         const amenities = await HotelModel.getRoomTypeAmenities(roomTypeId);
+
+         return { amenities };
+      } catch (error) {
+         if (error instanceof AppError) {
+            throw error;
+         }
+
+         throw new AppError(
+            "Failed to retrieve room type amenities. Please try again.",
+            HTTP_STATUS.INTERNAL_SERVER_ERROR
+         );
+      }
+   }
+
+   // Delete room type amenities
+   static async deleteRoomTypeAmenities(roomTypeId, amenityId) {
+      try {
+         const amenities = await HotelModel.deleteRoomTypeAmenities(
+            roomTypeId,
+            amenityId
+         );
+
+         return { amenities };
+      } catch (error) {
+         if (error instanceof AppError) {
+            throw error;
+         }
+
+         throw new AppError(
+            "Failed to retrieve room type amenities. Please try again.",
+            HTTP_STATUS.INTERNAL_SERVER_ERROR
+         );
+      }
+   }
+
+   // Delete room type room
+   static async deleteRoomTypeRoom(roomTypeId, roomId) {
+      try {
+         const room = await HotelModel.deleteRoomTypeRoom(roomTypeId, roomId);
+
+         return { room };
+      } catch (error) {
+         if (error instanceof AppError) {
+            throw error;
+         }
+
+         throw new AppError(
+            "Failed to retrieve room type room. Please try again.",
+            HTTP_STATUS.INTERNAL_SERVER_ERROR
+         );
+      }
+   }
+
+   // Update bank details
+   static async updateBankDetails(
+      hotelId,
+      bankName,
+      accountNumber,
+      accountHolderName
+   ) {
+      try {
+         const bankDetails = await HotelModel.updateBankDetails(
+            hotelId,
+            bankName,
+            accountNumber,
+            accountHolderName
+         );
+         if (!bankDetails) {
+            throw new AppError(
+               "Failed to update bank details. Please try again.",
+               HTTP_STATUS.INTERNAL_SERVER_ERROR
+            );
+         }
+
+         return bankDetails;
+      } catch (error) {
+         if (error instanceof AppError) {
+            throw error;
+         }
+
+         throw new AppError(
+            "Failed to update bank details. Please try again.",
+            HTTP_STATUS.INTERNAL_SERVER_ERROR
+         );
+      }
+   }
+
+   // Get hotel analytics
+   static async getHotelAnalytics(hotelId) {
+      try {
+         const analytics = await HotelModel.getHotelAnalytics(hotelId);
+         if (!analytics) {
+            throw new AppError(
+               "Failed to retrieve hotel analytics. Please try again.",
+               HTTP_STATUS.INTERNAL_SERVER_ERROR
+            );
+         }
+
+         return analytics;
+      } catch (error) {
+         if (error instanceof AppError) {
+            throw error;
+         }
+
+         throw new AppError(
+            "Failed to retrieve hotel analytics. Please try again.",
             HTTP_STATUS.INTERNAL_SERVER_ERROR
          );
       }

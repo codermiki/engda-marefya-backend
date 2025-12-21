@@ -164,6 +164,9 @@ export class BookingService {
    // Get hotel bookings service with pagination
    static async getHotelBookings(
       id,
+      search,
+      check_in,
+      check_out,
       status,
       page = PAGINATION.DEFAULT_PAGE,
       limit = PAGINATION.DEFAULT_LIMIT
@@ -171,16 +174,22 @@ export class BookingService {
       try {
          const totalBookings = await BookingModel.countHotelBookings(
             id,
+            search,
+            check_in,
+            check_out,
             status
          );
          const totalPages = Math.ceil(totalBookings / limit);
          // page should not exceed total pages
-         if (page > totalPages) {
+         if (page > totalPages && page != 1) {
             throw new AppError("Page not found.", HTTP_STATUS.NOT_FOUND);
          }
 
          const result = await BookingModel.getHotelBookings(
             id,
+            search,
+            check_in,
+            check_out,
             status,
             page,
             limit

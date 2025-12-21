@@ -158,7 +158,7 @@ export const updateRoomTypeValidation = (req, res, next) => {
 
 // Add amenities to a room type validation
 export const addRoomTypeAmenitiesValidation = [
-   body("amenity_ids").notEmpty().withMessage("Amenity ids are required"),
+   body("amenities").notEmpty().withMessage("Amenity ids are required"),
 ];
 
 // Add rooms to a room type validation
@@ -168,7 +168,10 @@ export const addRoomTypeRoomsValidation = [
 
 // Add room type images validation
 export const addRoomTypeImagesValidation = [
-   body("images").notEmpty().withMessage("Image urls are required"),
+   body("image_url").notEmpty().withMessage("Image urls are required"),
+   body("image_public_id")
+      .notEmpty()
+      .withMessage("Image public ids are required"),
 ];
 
 // Update room type room status validation

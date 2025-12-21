@@ -22,6 +22,14 @@ import {
    getUserWishlist,
    addBankDetails,
    getMyHotels,
+   getAllRoomTypesByHotelId,
+   getRoomTypeImages,
+   getRoomTypeRooms,
+   getRoomTypeAmenities,
+   deleteRoomTypeAmenities,
+   deleteRoomTypeRoom,
+   updateBankDetails,
+   getHotelAnalytics,
 } from "../controller/index.js";
 import {
    verifyToken,
@@ -44,6 +52,14 @@ import {
 } from "../../../middlewares/validation.js";
 
 const router = Router();
+
+// Get hotel analytics
+router.get(
+   "/:id/analytics",
+   verifyToken,
+   requireRole(["hotel_owner", "admin"]),
+   getHotelAnalytics
+);
 
 // Get hotels by owner id
 router.get(
@@ -88,6 +104,17 @@ router.post(
    addBankDetails
 );
 
+// Update bank details
+router.put(
+   "/:id/bank-details",
+   verifyToken,
+   requireRole(["hotel_owner"]),
+   requireHotelOwnership(["admin"]),
+   addBankDetailsValidation,
+   handleValidationErrors,
+   updateBankDetails
+);
+
 // Update hotel info
 router.put(
    "/:id",
@@ -117,6 +144,15 @@ router.post(
    createRoomTypeValidation,
    handleValidationErrors,
    createRoomType
+);
+
+// Get room types by hotel id
+router.get(
+   "/:id/room-types",
+   verifyToken,
+   requireRole(["hotel_owner"]),
+   requireHotelOwnership(["admin"]),
+   getAllRoomTypesByHotelId
 );
 
 // Update room type
@@ -149,13 +185,25 @@ router.get("/room-types/:id/reviews", getRoomTypeReviews);
 
 // Add amenities to a room type
 router.post(
-   "/room-types/:id/add-amenities",
+   "/room-types/:id/amenities",
    verifyToken,
    requireRole(["hotel_owner"]),
    requireRoomTypeOwnership(["admin"]),
    addRoomTypeAmenitiesValidation,
    handleValidationErrors,
    addRoomTypeAmenities
+);
+
+// Get room type amenities
+router.get("/room-types/:id/amenities", getRoomTypeAmenities);
+
+// Delete room type amenities
+router.delete(
+   "/room-types/:id/amenities/:amenityId",
+   verifyToken,
+   requireRole(["hotel_owner"]),
+   requireRoomTypeOwnership(["admin"]),
+   deleteRoomTypeAmenities
 );
 
 // Add rooms for a room type
@@ -169,6 +217,9 @@ router.post(
    addRoomTypeRooms
 );
 
+// Get all rooms for a room type
+router.get("/room-types/:id/rooms", getRoomTypeRooms);
+
 // Add room type images
 router.post(
    "/room-types/:id/images",
@@ -180,6 +231,9 @@ router.post(
    addRoomTypeImages
 );
 
+// Get all room types images
+router.get("/room-types/:id/images", getRoomTypeImages);
+
 // Update rooms status
 router.put(
    "/room-types/:id/rooms/:roomId",
@@ -189,6 +243,15 @@ router.put(
    updateRoomTypeRoomStatusValidation,
    handleValidationErrors,
    updateRoomTypeRoomStatus
+);
+
+// Delete room of the room type
+router.delete(
+   "/room-types/:id/rooms/:roomId",
+   verifyToken,
+   requireRole(["hotel_owner"]),
+   requireRoomTypeOwnership(["admin"]),
+   deleteRoomTypeRoom
 );
 
 // Delete image from a room type

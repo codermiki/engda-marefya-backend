@@ -108,6 +108,9 @@ export const getUserBookings = async (req, res, next) => {
 export const getHotelBookings = async (req, res, next) => {
    try {
       const id = req?.params?.id;
+      const search = req?.query?.search;
+      const check_in = req?.query?.check_in;
+      const check_out = req?.query?.check_out;
       const status = req?.query?.status;
       const page = req?.query?.page;
       const limit = req?.query?.limit;
@@ -115,15 +118,18 @@ export const getHotelBookings = async (req, res, next) => {
          throw new AppError("Hotel id is required", HTTP_STATUS.BAD_REQUEST);
       }
       if (status) {
-         if (!["pending", "paid", "cancelled"].includes(status)) {
+         if (!["pending", "paid"].includes(status)) {
             throw new AppError(
-               "Invalid status. Status must be 'pending', 'paid', or 'cancelled'",
+               "Invalid status. Status must be 'pending' or 'paid'",
                HTTP_STATUS.BAD_REQUEST
             );
          }
       }
       const { bookings, pagination } = await BookingService.getHotelBookings(
          id,
+         search,
+         check_in,
+         check_out,
          status,
          page,
          limit
