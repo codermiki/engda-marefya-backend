@@ -7,6 +7,7 @@ import {
    updateAmenity,
    removeAmenity,
    createAdmin,
+   getAdminDashboardData,
 } from "../controller/index.js";
 import {
    verifyToken,
@@ -75,6 +76,13 @@ router.delete(
    verifyToken,
    // requireRole([USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN]),
    removeAmenity
+);
+// Get admin dashboard data
+router.get(
+   "/dashboard/data",
+   verifyToken,
+   requireRole([USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN]),
+   getAdminDashboardData
 );
 
 export default router;

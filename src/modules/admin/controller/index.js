@@ -176,3 +176,18 @@ export const removeAmenity = async (req, res, next) => {
       next(error);
    }
 };
+
+// Get admin dashboard data controller
+export const getAdminDashboardData = async (req, res, next) => {
+   try {
+      const data = await AdminService.getAdminDashboardData();
+
+      return successResponse(res, {
+         message: "Admin dashboard data fetched successfully",
+         data,
+         statusCode: HTTP_STATUS.OK,
+      });
+   } catch (error) {
+      next(error);
+   }
+};

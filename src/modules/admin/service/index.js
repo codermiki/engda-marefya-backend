@@ -8,6 +8,7 @@ import JWTUtils from "../../../utils/JWTUtils.js";
 import PasswordUtils from "../../../utils/PasswordUtils.js";
 import UserModel from "../../auth/model/UserModel.js";
 import HotelModel from "../../hotels/model/HotelModel.js";
+import AdminModel from "../model/AdminModal.js";
 
 export class AdminService {
    // Create admin service
@@ -274,6 +275,25 @@ export class AdminService {
 
          throw new AppError(
             "Failed to remove Amenities. Please try again.",
+            HTTP_STATUS.INTERNAL_SERVER_ERROR
+         );
+      }
+   }
+
+   // Get admin dashboard data service
+   static async getAdminDashboardData() {
+      try {
+         const data = await AdminModel.getAdminDashboardData();
+
+         return data;
+      } catch (error) {
+         // Re-throw AppError instances, otherwise wrap in AppError
+         if (error instanceof AppError) {
+            throw error;
+         }
+
+         throw new AppError(
+            "Failed to fetch admin dashboard data. Please try again.",
             HTTP_STATUS.INTERNAL_SERVER_ERROR
          );
       }

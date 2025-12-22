@@ -30,6 +30,7 @@ import {
    deleteRoomTypeRoom,
    updateBankDetails,
    getHotelAnalytics,
+   approveHotel,
 } from "../controller/index.js";
 import {
    verifyToken,
@@ -91,6 +92,15 @@ router.post(
    createHotelValidation,
    handleValidationErrors,
    createHotel
+);
+
+// Approve hotel
+router.put(
+   "/:id/approve",
+   verifyToken,
+   requireRole(["admin"]),
+   requireHotelOwnership(["admin"]),
+   approveHotel
 );
 
 // Add Bank details

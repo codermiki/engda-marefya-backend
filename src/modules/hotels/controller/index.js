@@ -51,6 +51,22 @@ export const createHotel = async (req, res, next) => {
    }
 };
 
+// Approve hotel
+export const approveHotel = async (req, res, next) => {
+   try {
+      const { id } = req.params;
+      const data = await HotelService.approveHotel(id);
+
+      return successResponse(res, {
+         message: "Hotel approved successfully",
+         data,
+         statusCode: HTTP_STATUS.OK,
+      });
+   } catch (error) {
+      next(error);
+   }
+};
+
 // Update a Hotel
 export const updateHotel = async (req, res, next) => {
    try {
@@ -325,11 +341,13 @@ export const deleteRoomTypeImage = async (req, res, next) => {
 export const getAllHotels = async (req, res, next) => {
    try {
       const search = req?.query?.search;
+      const status = req?.query?.status;
       const page = req?.query?.page;
       const limit = req?.query?.limit;
 
       const { hotels, pagination } = await HotelService.getAllHotels(
          search,
+         status,
          page,
          limit
       );

@@ -51,6 +51,26 @@ class HotelModel {
       }
    }
 
+   // Approve hotel
+   static async approveHotel(id) {
+      const query = `UPDATE hotels SET status = 'approved' WHERE id = ?`;
+      const values = [id];
+
+      try {
+         const [result] = await pool.execute(query, values);
+         if (result.affectedRows === 0) {
+            return null;
+         }
+
+         return { id };
+      } catch (error) {
+         throw new AppError(
+            "Internal server error",
+            HTTP_STATUS.INTERNAL_SERVER_ERROR
+         );
+      }
+   }
+
    // Update hotel
    static async updateHotel(id, updateData) {
       const allowedFields = [
@@ -556,12 +576,14 @@ class HotelModel {
    }
 
    // Get all hotels
-   static async getAllHotels(search, page, limit) {
+   static async getAllHotels(search, status, page, limit) {
       const offset = (page - 1) * limit;
 
+      // add hotel owner info
       let query = `
-        SELECT id, owner_id, name, location, contact_info, description, business_license, profile_pic_url
-        FROM hotels
+        SELECT h.id, h.owner_id, h.name, h.location, h.contact_info, h.description, h.business_license, h.profile_pic_url,h.created_at, o.first_name, o.last_name, o.email ,o.phone_number
+        FROM hotels h
+        JOIN users o ON h.owner_id = o.id
     `;
 
       const values = [];
@@ -571,14 +593,15 @@ class HotelModel {
          values.push(`%${search}%`, `%${search}%`, `%${search}%`);
       }
 
+      if (status) {
+         query += ` WHERE h.status = ?`;
+         values.push(status);
+      }
+
       query += ` LIMIT ${Number(limit)} OFFSET ${Number(offset)}`;
 
       try {
          const [hotelRows] = await pool.execute(query, values);
-
-         if (hotelRows.length === 0) {
-            return null;
-         }
 
          return hotelRows;
       } catch (error) {
@@ -590,13 +613,18 @@ class HotelModel {
    }
 
    // Count all hotels with search
-   static async countAllHotels(search) {
+   static async countAllHotels(search, status) {
       let query = `SELECT COUNT(*) as count FROM hotels`;
       const values = [];
 
       if (search) {
          query += ` WHERE name LIKE ? OR location LIKE ? OR description LIKE ?`;
          values.push(`%${search}%`, `%${search}%`, `%${search}%`);
+      }
+
+      if (status) {
+         query += ` WHERE status = ?`;
+         values.push(status);
       }
 
       try {
@@ -1330,6 +1358,32 @@ class HotelModel {
          }
 
          return rows[0];
+      } catch (error) {
+         if (error instanceof AppError) {
+            throw error;
+         }
+         throw new AppError(
+            "Internal server error",
+            HTTP_STATUS.INTERNAL_SERVER_ERROR
+         );
+      }
+   }
+
+   // Get all hotels count
+   static async getAllHotelsCount(status) {
+      let query = `SELECT COUNT(*) AS count FROM hotels`;
+      let values = [];
+      if (status) {
+         query += ` WHERE status = ?`;
+         values.push(status);
+      }
+      try {
+         const [rows] = await pool.execute(query, values);
+         if (rows.length === 0) {
+            return 0;
+         }
+
+         return rows[0].count;
       } catch (error) {
          if (error instanceof AppError) {
             throw error;

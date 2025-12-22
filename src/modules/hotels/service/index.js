@@ -50,6 +50,28 @@ export class HotelService {
       }
    }
 
+   // Approve hotel
+   static async approveHotel(hotelId) {
+      try {
+         const updatedHotel = await HotelModel.approveHotel(hotelId);
+
+         if (!updatedHotel) {
+            throw new AppError("Hotel not found.", HTTP_STATUS.NOT_FOUND);
+         }
+
+         return updatedHotel;
+      } catch (error) {
+         if (error instanceof AppError) {
+            throw error;
+         }
+
+         throw new AppError(
+            "Failed to approve hotel. Please try again.",
+            HTTP_STATUS.INTERNAL_SERVER_ERROR
+         );
+      }
+   }
+
    // Update hotel
    static async updateHotel(hotelId, updateData) {
       try {
@@ -480,23 +502,25 @@ export class HotelService {
    // Get all hotels with pagination and search
    static async getAllHotels(
       search = "",
+      status = "",
       page = PAGINATION.DEFAULT_PAGE,
       limit = PAGINATION.DEFAULT_LIMIT
    ) {
       try {
-         const totalHotels = await HotelModel.countAllHotels(search);
+         const totalHotels = await HotelModel.countAllHotels(search, status);
          const totalPages = Math.ceil(totalHotels / limit);
 
-         if (totalHotels === 0) {
-            throw new AppError("Hotels not found.", HTTP_STATUS.NOT_FOUND);
-         }
-
          // page should not exced from the totalPages
-         if (page > totalPages) {
+         if (page > totalPages && page !== 1) {
             throw new AppError("Page not found.", HTTP_STATUS.NOT_FOUND);
          }
 
-         const hotels = await HotelModel.getAllHotels(search, page, limit);
+         const hotels = await HotelModel.getAllHotels(
+            search,
+            status,
+            page,
+            limit
+         );
 
          // prepare pagination
          const pagination = {

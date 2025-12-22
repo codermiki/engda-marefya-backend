@@ -507,6 +507,49 @@ class BookingModel {
          );
       }
    }
+
+   // Count all bookings
+   static async getAllBookingsCount(status) {
+      let query = `SELECT COUNT(*) AS count FROM bookings`;
+      let values = [];
+      if (status) {
+         query += ` WHERE status = ?`;
+         values.push(status);
+      }
+
+      try {
+         const [rows] = await pool.execute(query, values);
+         if (rows.length === 0) {
+            return 0;
+         }
+
+         return rows[0].count;
+      } catch (error) {
+         throw new AppError(
+            "Error counting hotel bookings",
+            HTTP_STATUS.INTERNAL_SERVER_ERROR
+         );
+      }
+   }
+
+   // Get total revenue
+   static async getTotalRevenue() {
+      const query = `SELECT SUM(total_amount) AS total_revenue FROM bookings WHERE status = 'paid'`;
+
+      try {
+         const [rows] = await pool.execute(query);
+         if (rows.length === 0) {
+            return 0;
+         }
+
+         return rows[0].total_revenue;
+      } catch (error) {
+         throw new AppError(
+            "Error getting total revenue",
+            HTTP_STATUS.INTERNAL_SERVER_ERROR
+         );
+      }
+   }
 }
 
 export default BookingModel;
