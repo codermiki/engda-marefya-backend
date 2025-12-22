@@ -321,6 +321,76 @@ export class AdminService {
       }
    }
 
+   // Create bed type service
+   static async createBedType(name) {
+      try {
+         const id = generateId();
+         const bedType = await HotelModel.createBedType(id, name);
+         if (!bedType) {
+            throw new AppError(
+               "Failed to create bed type",
+               HTTP_STATUS.INTERNAL_SERVER_ERROR
+            );
+         }
+
+         return bedType;
+      } catch (error) {
+         // Re-throw AppError instances, otherwise wrap in AppError
+         if (error instanceof AppError) {
+            throw error;
+         }
+
+         throw new AppError(
+            "Failed to create bed type. Please try again.",
+            HTTP_STATUS.INTERNAL_SERVER_ERROR
+         );
+      }
+   }
+
+   // Update bed type service
+   static async updateBedType(id, updateData) {
+      try {
+         const updatedBedType = await HotelModel.updateBedType(id, updateData);
+         if (!updatedBedType) {
+            throw new AppError("Bed type not found", HTTP_STATUS.NOT_FOUND);
+         }
+
+         return updatedBedType;
+      } catch (error) {
+         // Re-throw AppError instances, otherwise wrap in AppError
+         if (error instanceof AppError) {
+            throw error;
+         }
+
+         throw new AppError(
+            "Failed to update bed type. Please try again.",
+            HTTP_STATUS.INTERNAL_SERVER_ERROR
+         );
+      }
+   }
+
+   // Remove bed type service
+   static async removeBedType(id) {
+      try {
+         const removedBedType = await HotelModel.deleteBedType(id);
+         if (!removedBedType) {
+            throw new AppError("Bed type not found", HTTP_STATUS.NOT_FOUND);
+         }
+
+         return removedBedType;
+      } catch (error) {
+         // Re-throw AppError instances, otherwise wrap in AppError
+         if (error instanceof AppError) {
+            throw error;
+         }
+
+         throw new AppError(
+            "Failed to remove bed type. Please try again.",
+            HTTP_STATUS.INTERNAL_SERVER_ERROR
+         );
+      }
+   }
+
    // Get admin dashboard data service
    static async getAdminDashboardData() {
       try {

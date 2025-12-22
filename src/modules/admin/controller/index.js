@@ -203,6 +203,74 @@ export const removeAmenity = async (req, res, next) => {
    }
 };
 
+// Create bed type controller
+export const createBedType = async (req, res, next) => {
+   try {
+      const { name } = req.body;
+
+      // Basic validation
+      if (!name) {
+         throw new AppError(
+            "Bed type name is required",
+            HTTP_STATUS.BAD_REQUEST
+         );
+      }
+      // Call service to create room type
+      const data = await AdminService.createBedType(name);
+
+      return successResponse(res, {
+         message: "Bed type created successfully",
+         data,
+         statusCode: HTTP_STATUS.CREATED,
+      });
+   } catch (error) {
+      next(error);
+   }
+};
+
+// Update bed type controller
+export const updateBedType = async (req, res, next) => {
+   try {
+      const id = req?.params?.id;
+      const name = req?.body?.name;
+
+      if (!id) {
+         throw new AppError("Bed type id is required", HTTP_STATUS.BAD_REQUEST);
+      }
+
+      const data = await AdminService.updateBedType(id, name);
+
+      return successResponse(res, {
+         message: "Bed type updated successfully",
+         data,
+         statusCode: HTTP_STATUS.OK,
+      });
+   } catch (error) {
+      next(error);
+   }
+};
+
+// Remove bed type controller
+export const removeBedType = async (req, res, next) => {
+   try {
+      const id = req.params?.id;
+
+      if (!id) {
+         throw new AppError("Bed type id is required", HTTP_STATUS.BAD_REQUEST);
+      }
+
+      const data = await AdminService.removeBedType(id);
+
+      return successResponse(res, {
+         message: "Bed type removed successfully",
+         data,
+         statusCode: HTTP_STATUS.OK,
+      });
+   } catch (error) {
+      next(error);
+   }
+};
+
 // Get admin dashboard data controller
 export const getAdminDashboardData = async (req, res, next) => {
    try {

@@ -195,6 +195,21 @@ export const getAmenities = async (req, res, next) => {
    }
 };
 
+// get bed types
+export const getBedTypes = async (req, res, next) => {
+   try {
+      const data = await HotelService.getBedTypes();
+
+      return successResponse(res, {
+         message: "Bed types fetched successfully",
+         data,
+         statusCode: HTTP_STATUS.OK,
+      });
+   } catch (error) {
+      next(error);
+   }
+};
+
 // Add amenities for the room
 export const addRoomTypeAmenities = async (req, res, next) => {
    try {

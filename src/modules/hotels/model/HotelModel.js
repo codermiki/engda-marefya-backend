@@ -332,6 +332,96 @@ class HotelModel {
       }
    }
 
+   // create bed type
+   static async createBedType(id, name) {
+      const query = `INSERT INTO bed_types (id, name)
+        VALUES (?, ?)`;
+      const values = [id, name];
+      try {
+         const [result] = await pool.execute(query, values);
+         if (result.affectedRows === 0) {
+            return null;
+         }
+
+         return { id, name };
+      } catch (error) {
+         if (error.code === "ER_DUP_ENTRY") {
+            if (error.message.includes("name")) {
+               throw new AppError(
+                  "Bed type already exists with this name",
+                  HTTP_STATUS.BAD_REQUEST
+               );
+            }
+         }
+         throw new AppError(
+            "Internal server error",
+            HTTP_STATUS.INTERNAL_SERVER_ERROR
+         );
+      }
+   }
+
+   // update bed type
+   static async updateBedType(id, name) {
+      const query = `UPDATE bed_types SET name = ? WHERE id = ?`;
+      const values = [name, id];
+      try {
+         const [result] = await pool.execute(query, values);
+         if (result.affectedRows === 0) {
+            return null;
+         }
+
+         return { id, name };
+      } catch (error) {
+         if (error.code === "ER_DUP_ENTRY") {
+            if (error.message.includes("name")) {
+               throw new AppError(
+                  "Bed type already exists with this name",
+                  HTTP_STATUS.BAD_REQUEST
+               );
+            }
+         }
+         throw new AppError(
+            "Internal server error",
+            HTTP_STATUS.INTERNAL_SERVER_ERROR
+         );
+      }
+   }
+
+   // delete bed type
+   static async deleteBedType(id) {
+      const query = `DELETE FROM bed_types WHERE id = ?`;
+      const values = [id];
+      try {
+         const [result] = await pool.execute(query, values);
+         if (result.affectedRows === 0) {
+            return null;
+         }
+
+         return { id };
+      } catch (error) {
+         throw new AppError(
+            "Internal server error",
+            HTTP_STATUS.INTERNAL_SERVER_ERROR
+         );
+      }
+   }
+
+   // get bed types
+   static async getBedTypes() {
+      const query = `SELECT id, name
+        FROM bed_types`;
+      try {
+         const [rows] = await pool.execute(query);
+
+         return rows;
+      } catch (error) {
+         throw new AppError(
+            "Internal server error",
+            HTTP_STATUS.INTERNAL_SERVER_ERROR
+         );
+      }
+   }
+
    // add room type amenities
    static async addRoomTypeAmenity(amenityData) {
       const { id, room_type_id, amenity_id } = amenityData;

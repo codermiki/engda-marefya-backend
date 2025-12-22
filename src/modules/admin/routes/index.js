@@ -9,6 +9,9 @@ import {
    createAdmin,
    getAdminDashboardData,
    updateUserRole,
+   createBedType,
+   updateBedType,
+   removeBedType,
 } from "../controller/index.js";
 import {
    verifyToken,
@@ -20,6 +23,8 @@ import {
    updateAmenityValidation,
    updateUserStatusValidation,
    updateUserRoleValidation,
+   createBedTypeValidation,
+   updateBedTypeValidation,
 } from "../../../middlewares/validation.js";
 import { USER_ROLES } from "../../../constants/user.js";
 
@@ -88,6 +93,30 @@ router.delete(
    verifyToken,
    // requireRole([USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN]),
    removeAmenity
+);
+// Create Bed Type
+router.post(
+   "/bed-types",
+   verifyToken,
+   // requireRole([USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN]),
+   createBedTypeValidation,
+   handleValidationErrors,
+   createBedType
+);
+// Update Bed Type
+router.put(
+   "/bed-types/:id",
+   verifyToken,
+   // requireRole([USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN]),
+   updateBedTypeValidation,
+   updateBedType
+);
+// Remove Bed Type
+router.delete(
+   "/bed-types/:id",
+   verifyToken,
+   // requireRole([USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN]),
+   removeBedType
 );
 // Get admin dashboard data
 router.get(

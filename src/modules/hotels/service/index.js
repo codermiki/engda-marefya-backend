@@ -250,6 +250,20 @@ export class HotelService {
       }
    }
 
+   // Get bed types
+   static async getBedTypes() {
+      try {
+         const bed_types = await HotelModel.getBedTypes();
+
+         return { bed_types };
+      } catch (error) {
+         throw new AppError(
+            "Failed to get bed types. Please try again.",
+            HTTP_STATUS.INTERNAL_SERVER_ERROR
+         );
+      }
+   }
+
    // Add room type amenities
    static async addRoomTypeAmenities(roomTypeId, amenity_ids) {
       try {

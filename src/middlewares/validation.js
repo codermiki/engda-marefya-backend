@@ -254,3 +254,13 @@ export const updateHotelStatusValidation = [
       .isIn(["pending", "approved", "rejected"])
       .withMessage("Invalid status (pending, approved, rejected)"),
 ];
+
+// Create bed type validation
+export const createBedTypeValidation = [
+   body("name").notEmpty().withMessage("Bed type name is required"),
+];
+
+// Update bed type validation
+export const updateBedTypeValidation = [
+   body("name").notEmpty().withMessage("Bed type name is required"),
+];

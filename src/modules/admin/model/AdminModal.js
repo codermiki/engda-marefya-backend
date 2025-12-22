@@ -15,9 +15,7 @@ class AdminModel {
          const total_customers_count = await UserModel.countAllUsers({
             role: "customer",
          });
-         const total_bookings_count = await BookingModel.getAllBookingsCount(
-            "paid"
-         );
+         const total_bookings_count = await BookingModel.getAllBookingsCount();
          const pending_hotels_count = await HotelModel.getAllHotelsCount(
             "pending"
          );

@@ -31,6 +31,7 @@ import {
    updateBankDetails,
    getHotelAnalytics,
    updateHotelStatus,
+   getBedTypes,
 } from "../controller/index.js";
 import {
    verifyToken,
@@ -80,6 +81,14 @@ router.get(
    verifyToken,
    requireRole(["hotel_owner", "admin"]),
    getAmenities
+);
+
+// Get bed types
+router.get(
+   "/bed-types",
+   verifyToken,
+   requireRole(["hotel_owner", "admin"]),
+   getBedTypes
 );
 
 // Get room types with filter, pagination and search
