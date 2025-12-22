@@ -52,8 +52,8 @@ router.get("/user/:id", verifyToken, getUserBookings);
 router.get(
    "/hotel/:id",
    verifyToken,
-   requireRole("hotel_owner"),
-   requireHotelOwnership("admin"),
+   requireRole([USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN]),
+   requireHotelOwnership([USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN]),
    getHotelBookings
 );
 
@@ -65,8 +65,5 @@ router.post(
    handleValidationErrors,
    addReviewToBooking
 );
-
-// Get reviews for a hotel
-// router.get("/hotel/:id/reviews", verifyToken, getHotelReviews);
 
 export default router;

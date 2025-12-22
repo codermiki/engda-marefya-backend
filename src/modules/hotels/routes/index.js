@@ -53,6 +53,7 @@ import {
    addBankDetailsValidation,
    updateHotelStatusValidation,
 } from "../../../middlewares/validation.js";
+import { USER_ROLES } from "../../../constants/user.js";
 
 const router = Router();
 
@@ -60,7 +61,11 @@ const router = Router();
 router.get(
    "/:id/analytics",
    verifyToken,
-   requireRole(["hotel_owner", "admin"]),
+   requireRole([
+      USER_ROLES.HOTEL_OWNER,
+      USER_ROLES.ADMIN,
+      USER_ROLES.SUPER_ADMIN,
+   ]),
    getHotelAnalytics
 );
 
@@ -68,7 +73,11 @@ router.get(
 router.get(
    "/me",
    verifyToken,
-   requireRole(["hotel_owner", "admin"]),
+   requireRole([
+      USER_ROLES.HOTEL_OWNER,
+      USER_ROLES.ADMIN,
+      USER_ROLES.SUPER_ADMIN,
+   ]),
    getMyHotels
 );
 
@@ -79,7 +88,11 @@ router.get("/", getAllHotels);
 router.get(
    "/amenities",
    verifyToken,
-   requireRole(["hotel_owner", "admin"]),
+   requireRole([
+      USER_ROLES.HOTEL_OWNER,
+      USER_ROLES.ADMIN,
+      USER_ROLES.SUPER_ADMIN,
+   ]),
    getAmenities
 );
 
@@ -87,7 +100,11 @@ router.get(
 router.get(
    "/bed-types",
    verifyToken,
-   requireRole(["hotel_owner", "admin"]),
+   requireRole([
+      USER_ROLES.HOTEL_OWNER,
+      USER_ROLES.ADMIN,
+      USER_ROLES.SUPER_ADMIN,
+   ]),
    getBedTypes
 );
 
@@ -98,7 +115,7 @@ router.get("/room-types", getAllRoomTypes);
 router.post(
    "/",
    verifyToken,
-   requireRole(["hotel_owner"]),
+   requireRole([USER_ROLES.HOTEL_OWNER]),
    createHotelValidation,
    handleValidationErrors,
    createHotel
@@ -108,7 +125,7 @@ router.post(
 router.put(
    "/:id/status",
    verifyToken,
-   requireRole(["admin"]),
+   requireRole([USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN]),
    updateHotelStatusValidation,
    handleValidationErrors,
    updateHotelStatus
@@ -118,8 +135,8 @@ router.put(
 router.post(
    "/:id/bank-details",
    verifyToken,
-   requireRole(["hotel_owner"]),
-   requireHotelOwnership(["admin"]),
+   requireRole([USER_ROLES.HOTEL_OWNER]),
+   requireHotelOwnership([USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN]),
    addBankDetailsValidation,
    handleValidationErrors,
    addBankDetails
@@ -129,8 +146,8 @@ router.post(
 router.put(
    "/:id/bank-details",
    verifyToken,
-   requireRole(["hotel_owner"]),
-   requireHotelOwnership(["admin"]),
+   requireRole([USER_ROLES.HOTEL_OWNER]),
+   requireHotelOwnership([USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN]),
    addBankDetailsValidation,
    handleValidationErrors,
    updateBankDetails
@@ -140,8 +157,8 @@ router.put(
 router.put(
    "/:id",
    verifyToken,
-   requireRole(["hotel_owner"]),
-   requireHotelOwnership(["admin"]),
+   requireRole([USER_ROLES.HOTEL_OWNER]),
+   requireHotelOwnership([USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN]),
    updateHotelValidation,
    updateHotel
 );
@@ -153,7 +170,7 @@ router.get("/:id", getHotelById);
 router.get(
    "/owner/:id",
    verifyToken,
-   requireUserOwnership(["admin"]),
+   requireUserOwnership([USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN]),
    getHotelsByOwnerId
 );
 
@@ -161,7 +178,8 @@ router.get(
 router.post(
    "/:id/room-types",
    verifyToken,
-   requireRole(["hotel_owner"]),
+   requireRole([USER_ROLES.HOTEL_OWNER]),
+   requireHotelOwnership([USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN]),
    createRoomTypeValidation,
    handleValidationErrors,
    createRoomType
@@ -171,8 +189,8 @@ router.post(
 router.get(
    "/:id/room-types",
    verifyToken,
-   requireRole(["hotel_owner"]),
-   requireHotelOwnership(["admin"]),
+   requireRole([USER_ROLES.HOTEL_OWNER]),
+   requireHotelOwnership([USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN]),
    getAllRoomTypesByHotelId
 );
 
@@ -180,8 +198,8 @@ router.get(
 router.put(
    "/room-types/:id",
    verifyToken,
-   requireRole(["hotel_owner"]),
-   requireRoomTypeOwnership(["admin"]),
+   requireRole([USER_ROLES.HOTEL_OWNER]),
+   requireRoomTypeOwnership([USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN]),
    updateRoomTypeValidation,
    updateRoomType
 );
@@ -208,8 +226,8 @@ router.get("/room-types/:id/reviews", getRoomTypeReviews);
 router.post(
    "/room-types/:id/amenities",
    verifyToken,
-   requireRole(["hotel_owner"]),
-   requireRoomTypeOwnership(["admin"]),
+   requireRole([USER_ROLES.HOTEL_OWNER]),
+   requireRoomTypeOwnership([USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN]),
    addRoomTypeAmenitiesValidation,
    handleValidationErrors,
    addRoomTypeAmenities
@@ -222,8 +240,8 @@ router.get("/room-types/:id/amenities", getRoomTypeAmenities);
 router.delete(
    "/room-types/:id/amenities/:amenityId",
    verifyToken,
-   requireRole(["hotel_owner"]),
-   requireRoomTypeOwnership(["admin"]),
+   requireRole([USER_ROLES.HOTEL_OWNER]),
+   requireRoomTypeOwnership([USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN]),
    deleteRoomTypeAmenities
 );
 
@@ -231,8 +249,8 @@ router.delete(
 router.post(
    "/room-types/:id/rooms",
    verifyToken,
-   requireRole(["hotel_owner"]),
-   requireRoomTypeOwnership(["admin"]),
+   requireRole([USER_ROLES.HOTEL_OWNER]),
+   requireRoomTypeOwnership([USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN]),
    addRoomTypeRoomsValidation,
    handleValidationErrors,
    addRoomTypeRooms
@@ -245,8 +263,8 @@ router.get("/room-types/:id/rooms", getRoomTypeRooms);
 router.post(
    "/room-types/:id/images",
    verifyToken,
-   requireRole(["hotel_owner"]),
-   requireRoomTypeOwnership(["admin"]),
+   requireRole([USER_ROLES.HOTEL_OWNER]),
+   requireRoomTypeOwnership([USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN]),
    addRoomTypeImagesValidation,
    handleValidationErrors,
    addRoomTypeImages
@@ -259,8 +277,8 @@ router.get("/room-types/:id/images", getRoomTypeImages);
 router.put(
    "/room-types/:id/rooms/:roomId",
    verifyToken,
-   requireRole(["hotel_owner"]),
-   requireRoomTypeOwnership(["admin"]),
+   requireRole([USER_ROLES.HOTEL_OWNER]),
+   requireRoomTypeOwnership([USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN]),
    updateRoomTypeRoomStatusValidation,
    handleValidationErrors,
    updateRoomTypeRoomStatus
@@ -270,8 +288,8 @@ router.put(
 router.delete(
    "/room-types/:id/rooms/:roomId",
    verifyToken,
-   requireRole(["hotel_owner"]),
-   requireRoomTypeOwnership(["admin"]),
+   requireRole([USER_ROLES.HOTEL_OWNER]),
+   requireRoomTypeOwnership([USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN]),
    deleteRoomTypeRoom
 );
 
@@ -279,8 +297,8 @@ router.delete(
 router.delete(
    "/room-types/:id/images/:imageId",
    verifyToken,
-   requireRole(["hotel_owner"]),
-   requireRoomTypeOwnership(["admin"]),
+   requireRole([USER_ROLES.HOTEL_OWNER]),
+   requireRoomTypeOwnership([USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN]),
    deleteRoomTypeImage
 );
 

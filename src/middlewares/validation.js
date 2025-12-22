@@ -52,6 +52,41 @@ export const registerValidation = [
       .withMessage("Invalid role"),
 ];
 
+// Create admin validation
+export const createAdminValidation = [
+   body("first_name")
+      .notEmpty()
+      .withMessage("First name is required")
+      .isLength({ min: 2, max: 100 })
+      .withMessage("First name must be between 2 and 100 characters"),
+
+   body("last_name")
+      .notEmpty()
+      .withMessage("Last name is required")
+      .isLength({ min: 2, max: 100 })
+      .withMessage("Last name must be between 2 and 100 characters"),
+
+   body("email").isEmail().withMessage("Valid email is required"),
+
+   body("password")
+      .isLength({ min: 6 })
+      .withMessage("Password must be at least 6 characters")
+      .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/)
+      .withMessage(
+         "Password must contain at least one lowercase letter, one uppercase letter, and one number"
+      ),
+
+   body("phone_number")
+      .isMobilePhone()
+      .withMessage("Valid phone number is required"),
+
+   body("role")
+      .notEmpty()
+      .withMessage("Role is required")
+      .isIn(["customer", "hotel_owner", "admin"])
+      .withMessage("Invalid role"),
+];
+
 // Update user profile validation all fields are optional but one field is required to update
 export const updateUserProfileValidation = (req, res, next) => {
    const updateData = req.body;

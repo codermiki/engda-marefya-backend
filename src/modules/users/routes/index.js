@@ -5,6 +5,7 @@ import {
    verifyToken,
    requireUserOwnership,
 } from "../../../middlewares/authMiddleware.js";
+import { USER_ROLES } from "../../../constants/user.js";
 
 const router = Router();
 
@@ -12,7 +13,7 @@ const router = Router();
 router.get(
    "/:id",
    verifyToken,
-   requireUserOwnership(["admin"]),
+   requireUserOwnership([USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN]),
    getUserProfile
 );
 
@@ -20,7 +21,7 @@ router.get(
 router.put(
    "/:id",
    verifyToken,
-   requireUserOwnership(["admin"]),
+   requireUserOwnership([USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN]),
    updateUserProfileValidation,
    updateUserProfile
 );
