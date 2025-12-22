@@ -511,7 +511,7 @@ export class HotelService {
          const totalPages = Math.ceil(totalHotels / limit);
 
          // page should not exced from the totalPages
-         if (page > totalPages && page !== 1) {
+         if (page > totalPages && page != 1) {
             throw new AppError("Page not found.", HTTP_STATUS.NOT_FOUND);
          }
 

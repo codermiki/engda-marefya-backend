@@ -25,14 +25,18 @@ export const getAllUsers = async (req, res, next) => {
    try {
       const role = req?.query?.role;
       const status = req?.query?.status;
+      const search = req?.query?.search;
       const page = req?.query?.page;
       const limit = req?.query?.limit;
+      const isSuperAdmin = req?.user?.role === "super_admin";
 
       const { users, pagination } = await AdminService.getAllUsers(
          role,
          status,
+         search,
          page,
-         limit
+         limit,
+         isSuperAdmin
       );
 
       return successResponse(res, {
@@ -74,6 +78,28 @@ export const updateUserStatus = async (req, res, next) => {
 
       return successResponse(res, {
          message: "User status updated successfully",
+         data,
+         statusCode: HTTP_STATUS.OK,
+      });
+   } catch (error) {
+      next(error);
+   }
+};
+
+// Update user role controller
+export const updateUserRole = async (req, res, next) => {
+   try {
+      const id = req.params?.id;
+      const { role } = req.body;
+
+      if (!id) {
+         throw new AppError("User id is required", HTTP_STATUS.BAD_REQUEST);
+      }
+
+      const data = await AdminService.updateUserRole(id, role);
+
+      return successResponse(res, {
+         message: "User role updated successfully",
          data,
          statusCode: HTTP_STATUS.OK,
       });

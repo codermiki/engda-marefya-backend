@@ -236,3 +236,12 @@ export const addBankDetailsValidation = [
       .notEmpty()
       .withMessage("Account holder name is required"),
 ];
+
+// Update user role validation
+export const updateUserRoleValidation = [
+   body("role")
+      .notEmpty()
+      .withMessage("Role is required")
+      .isIn(["customer", "hotel_owner", "admin"])
+      .withMessage("Invalid role"),
+];

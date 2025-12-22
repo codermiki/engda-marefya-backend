@@ -186,19 +186,45 @@ class UserModel {
    }
 
    // find users with filters
-   static async getAllUsers(filters = {}, { page, limit }) {
+   static async getAllUsers(
+      { role, status, search },
+      isSuperAdmin,
+      { page, limit }
+   ) {
       const offset = (page - 1) * limit;
-      let query = "SELECT * FROM users";
-      const conditions = [];
-      const values = [];
-      // Apply filters
-      for (const key in filters) {
-         conditions.push(`${key} = ?`);
-         values.push(filters[key]);
+      let query = "SELECT * FROM users WHERE 1=1";
+      let values = [];
+
+      // Restrict roles if not super admin
+      if (!isSuperAdmin) {
+         query += " AND role IN (?, ?)";
+         values.push("customer", "hotel_owner");
       }
-      if (conditions.length > 0) {
-         query += " WHERE " + conditions.join(" AND ");
+
+      // Optional role filter
+      if (role) {
+         query += " AND role = ?";
+         values.push(role);
       }
+
+      // Optional status filter
+      if (status) {
+         query += " AND status = ?";
+         values.push(status);
+      }
+
+      // Optional search filter
+      if (search) {
+         query +=
+            " AND (first_name LIKE ? OR last_name LIKE ? OR phone_number LIKE ? OR email LIKE ?)";
+         values.push(
+            `%${search}%`,
+            `%${search}%`,
+            `%${search}%`,
+            `%${search}%`
+         );
+      }
+
       // Apply pagination
       query += ` LIMIT ${Number(limit)} OFFSET ${Number(offset)}`;
 
@@ -215,22 +241,46 @@ class UserModel {
    }
 
    // Count users with filters
-   static async countAllUsers(filters = {}) {
-      let query = "SELECT COUNT(*) as count FROM users";
-      const conditions = [];
+   static async countAllUsers({ role, status, search }, isSuperAdmin) {
+      let query = "SELECT COUNT(*) AS count FROM users WHERE 1=1";
       const values = [];
-      // Apply filters
-      for (const key in filters) {
-         conditions.push(`${key} = ?`);
-         values.push(filters[key]);
+
+      // Restrict roles if not super admin
+      if (!isSuperAdmin) {
+         query += " AND role IN (?, ?)";
+         values.push("customer", "hotel_owner");
       }
-      if (conditions.length > 0) {
-         query += " WHERE " + conditions.join(" AND ");
+
+      // Optional role filter
+      if (role) {
+         query += " AND role = ?";
+         values.push(role);
       }
+
+      // Optional status filter
+      if (status) {
+         query += " AND status = ?";
+         values.push(status);
+      }
+
+      // Optional search filter
+      if (search) {
+         query +=
+            " AND (first_name LIKE ? OR last_name LIKE ? OR phone_number LIKE ? OR email LIKE ?)";
+         values.push(
+            `%${search}%`,
+            `%${search}%`,
+            `%${search}%`,
+            `%${search}%`
+         );
+      }
+
       try {
          const [rows] = await pool.execute(query, values);
+
          return rows[0].count;
       } catch (error) {
+         console.error(error);
          throw new AppError(
             "Internal server error",
             HTTP_STATUS.INTERNAL_SERVER_ERROR

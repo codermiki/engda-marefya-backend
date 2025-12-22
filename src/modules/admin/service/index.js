@@ -84,30 +84,42 @@ export class AdminService {
    static async getAllUsers(
       role,
       status,
+      search,
       page = PAGINATION.DEFAULT_PAGE,
-      limit = PAGINATION.DEFAULT_LIMIT
+      limit = PAGINATION.DEFAULT_LIMIT,
+      isSuperAdmin = false
    ) {
       try {
-         const filters = {};
-         if (role) {
-            filters.role = role;
-         }
-         if (status) {
-            filters.status = status;
+         if (
+            !isSuperAdmin &&
+            ![USER_ROLES.CUSTOMER, USER_ROLES.HOTEL_OWNER].includes(role) &&
+            role
+         ) {
+            throw new AppError(
+               "Invalid role. Role must be customer or hotel_owner",
+               HTTP_STATUS.BAD_REQUEST
+            );
          }
 
          // Get total users count and users data
-         const totalUsers = await UserModel.countAllUsers(filters);
+         const totalUsers = await UserModel.countAllUsers(
+            { role, status, search },
+            isSuperAdmin
+         );
          const totalPages = Math.ceil(totalUsers / limit);
          // page should not exceed total pages
-         if (page > totalPages) {
+         if (page > totalPages && page != 1) {
             throw new AppError("Page not found.", HTTP_STATUS.NOT_FOUND);
          }
 
-         const usersData = await UserModel.getAllUsers(filters, {
-            page,
-            limit,
-         });
+         const usersData = await UserModel.getAllUsers(
+            { role, status, search },
+            isSuperAdmin,
+            {
+               page,
+               limit,
+            }
+         );
 
          // prepare users data to return only necessary fields
          const users = usersData.map((user) => ({
@@ -170,6 +182,35 @@ export class AdminService {
 
          throw new AppError(
             "Failed to update user status. Please try again.",
+            HTTP_STATUS.INTERNAL_SERVER_ERROR
+         );
+      }
+   }
+
+   // Update user role service
+   static async updateUserRole(id, role) {
+      try {
+         const user = await UserModel.findById(id);
+         if (!user) {
+            throw new AppError("User not found", HTTP_STATUS.NOT_FOUND);
+         }
+         const updatedUser = await UserModel.update(id, { role });
+         if (!updatedUser) {
+            throw new AppError(
+               "Failed to update user role",
+               HTTP_STATUS.INTERNAL_SERVER_ERROR
+            );
+         }
+
+         return updatedUser;
+      } catch (error) {
+         // Re-throw AppError instances, otherwise wrap in AppError
+         if (error instanceof AppError) {
+            throw error;
+         }
+
+         throw new AppError(
+            "Failed to update user role. Please try again.",
             HTTP_STATUS.INTERNAL_SERVER_ERROR
          );
       }

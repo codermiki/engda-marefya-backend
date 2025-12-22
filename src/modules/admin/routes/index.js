@@ -8,6 +8,7 @@ import {
    removeAmenity,
    createAdmin,
    getAdminDashboardData,
+   updateUserRole,
 } from "../controller/index.js";
 import {
    verifyToken,
@@ -18,6 +19,7 @@ import {
    registerValidation,
    updateAmenityValidation,
    updateUserStatusValidation,
+   updateUserRoleValidation,
 } from "../../../middlewares/validation.js";
 import { USER_ROLES } from "../../../constants/user.js";
 
@@ -40,13 +42,23 @@ router.get(
    getAllUsers
 );
 // Activate/Deactivate user route
-router.post(
+router.put(
    "/users/:id/status",
    verifyToken,
    // requireRole([USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN]),
    updateUserStatusValidation,
    handleValidationErrors,
    updateUserStatus
+);
+
+// Update user role
+router.put(
+   "/users/:id/role",
+   verifyToken,
+   // requireRole([USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN]),
+   updateUserRoleValidation,
+   handleValidationErrors,
+   updateUserRole
 );
 // Remove user route
 router.delete(
