@@ -51,14 +51,23 @@ export const createHotel = async (req, res, next) => {
    }
 };
 
-// Approve hotel
-export const approveHotel = async (req, res, next) => {
+// Update hotel status
+export const updateHotelStatus = async (req, res, next) => {
    try {
-      const { id } = req.params;
-      const data = await HotelService.approveHotel(id);
+      const id = req?.params?.id;
+      const status = req?.body?.status;
+
+      if (!id || !status) {
+         throw new AppError(
+            "Hotel ID and status are required",
+            HTTP_STATUS.BAD_REQUEST
+         );
+      }
+
+      const data = await HotelService.updateHotelStatus(id, status);
 
       return successResponse(res, {
-         message: "Hotel approved successfully",
+         message: "Hotel status updated successfully",
          data,
          statusCode: HTTP_STATUS.OK,
       });

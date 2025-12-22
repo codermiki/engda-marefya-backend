@@ -52,9 +52,9 @@ class HotelModel {
    }
 
    // Approve hotel
-   static async approveHotel(id) {
-      const query = `UPDATE hotels SET status = 'approved' WHERE id = ?`;
-      const values = [id];
+   static async updateHotelStatus(id, status) {
+      const query = `UPDATE hotels SET status = ? WHERE id = ?`;
+      const values = [status, id];
 
       try {
          const [result] = await pool.execute(query, values);
@@ -388,17 +388,39 @@ class HotelModel {
 
    // get hotel by id
    static async getHotelById(hotelId) {
-      const [hotelRows] = await pool.execute(
-         `SELECT id, name, location, contact_info, description, business_license, profile_pic_url, status, owner_id, created_at, updated_at
-          FROM hotels
-          WHERE id = ?`,
-         [hotelId]
-      );
-      if (hotelRows.length === 0) {
-         return null;
-      }
+      const query = `
+            SELECT
+               h.id,
+               h.name,
+               h.location,
+               h.contact_info,
+               h.description,
+               h.business_license,
+               h.profile_pic_url,
+               h.status,
+               h.owner_id,
+               u.first_name,
+               u.last_name,
+               u.email,
+               u.phone_number,
+               h.created_at,
+               h.updated_at
+            FROM hotels h
+            JOIN users u ON h.owner_id = u.id
+            WHERE h.id = ?`;
+      try {
+         const [hotelRows] = await pool.execute(query, [hotelId]);
+         if (hotelRows.length === 0) {
+            return null;
+         }
 
-      return hotelRows[0];
+         return hotelRows[0];
+      } catch (error) {
+         throw new AppError(
+            "Internal server error",
+            HTTP_STATUS.INTERNAL_SERVER_ERROR
+         );
+      }
    }
 
    // get hotels room types
@@ -581,7 +603,7 @@ class HotelModel {
 
       // add hotel owner info
       let query = `
-        SELECT h.id, h.owner_id, h.name, h.location, h.contact_info, h.description, h.business_license, h.profile_pic_url,h.created_at, o.first_name, o.last_name, o.email ,o.phone_number
+        SELECT h.id, h.owner_id, h.name, h.location, h.contact_info, h.description, h.business_license, h.profile_pic_url, h.status, h.created_at, o.first_name, o.last_name, o.email ,o.phone_number,o.profile_pic_url as owner_profile_pic_url
         FROM hotels h
         JOIN users o ON h.owner_id = o.id
     `;

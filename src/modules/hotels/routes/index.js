@@ -30,7 +30,7 @@ import {
    deleteRoomTypeRoom,
    updateBankDetails,
    getHotelAnalytics,
-   approveHotel,
+   updateHotelStatus,
 } from "../controller/index.js";
 import {
    verifyToken,
@@ -50,6 +50,7 @@ import {
    updateRoomTypeRoomStatusValidation,
    updateRoomTypeValidation,
    addBankDetailsValidation,
+   updateHotelStatusValidation,
 } from "../../../middlewares/validation.js";
 
 const router = Router();
@@ -94,13 +95,14 @@ router.post(
    createHotel
 );
 
-// Approve hotel
+// Update hotel status
 router.put(
-   "/:id/approve",
+   "/:id/status",
    verifyToken,
    requireRole(["admin"]),
-   requireHotelOwnership(["admin"]),
-   approveHotel
+   updateHotelStatusValidation,
+   handleValidationErrors,
+   updateHotelStatus
 );
 
 // Add Bank details

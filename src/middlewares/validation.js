@@ -245,3 +245,12 @@ export const updateUserRoleValidation = [
       .isIn(["customer", "hotel_owner", "admin"])
       .withMessage("Invalid role"),
 ];
+
+// Update hotel status validation
+export const updateHotelStatusValidation = [
+   body("status")
+      .notEmpty()
+      .withMessage("Status is required")
+      .isIn(["pending", "approved", "rejected"])
+      .withMessage("Invalid status (pending, approved, rejected)"),
+];

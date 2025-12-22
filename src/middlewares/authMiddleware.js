@@ -96,7 +96,7 @@ export const requireHotelOwnership = (allowedRoles) => {
          }
 
          // Check if user owns the hotel
-         if (hotel.owner_id !== userId) {
+         if (hotel.owner.id !== userId) {
             throw new AppError(
                "You can only manage your own hotels",
                HTTP_STATUS.FORBIDDEN

@@ -50,10 +50,13 @@ export class HotelService {
       }
    }
 
-   // Approve hotel
-   static async approveHotel(hotelId) {
+   // Update hotel status
+   static async updateHotelStatus(hotelId, status) {
       try {
-         const updatedHotel = await HotelModel.approveHotel(hotelId);
+         const updatedHotel = await HotelModel.updateHotelStatus(
+            hotelId,
+            status
+         );
 
          if (!updatedHotel) {
             throw new AppError("Hotel not found.", HTTP_STATUS.NOT_FOUND);
@@ -66,7 +69,7 @@ export class HotelService {
          }
 
          throw new AppError(
-            "Failed to approve hotel. Please try again.",
+            "Failed to update hotel status. Please try again.",
             HTTP_STATUS.INTERNAL_SERVER_ERROR
          );
       }
@@ -413,7 +416,13 @@ export class HotelService {
             business_license: hotel.business_license,
             profile_pic_url: hotel.profile_pic_url,
             status: hotel.status,
-            owner_id: hotel.owner_id,
+            owner: {
+               id: hotel.owner_id,
+               first_name: hotel.first_name,
+               last_name: hotel.last_name,
+               email: hotel.email,
+               phone_number: hotel.phone_number,
+            },
             room_types: roomTypesWithDetails,
             created_at: hotel.created_at,
             updated_at: hotel.updated_at,
