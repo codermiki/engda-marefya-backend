@@ -145,6 +145,34 @@ export const getHotelBookings = async (req, res, next) => {
    }
 };
 
+// Get all bookings controller
+export const getAllBookings = async (req, res, next) => {
+   try {
+      const search = req?.query?.search;
+      const check_in = req?.query?.check_in;
+      const check_out = req?.query?.check_out;
+      const status = req?.query?.status;
+      const page = req?.query?.page;
+      const limit = req?.query?.limit;
+      const { bookings, pagination } = await BookingService.getAllBookings(
+         search,
+         check_in,
+         check_out,
+         status,
+         page,
+         limit
+      );
+
+      return successResponse(res, {
+         message: "All bookings retrieved successfully",
+         data: { bookings, pagination },
+         statusCode: HTTP_STATUS.OK,
+      });
+   } catch (error) {
+      next(error);
+   }
+};
+
 // Add review to booking controller
 export const addReviewToBooking = async (req, res, next) => {
    try {

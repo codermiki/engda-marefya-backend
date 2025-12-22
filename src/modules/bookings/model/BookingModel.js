@@ -90,6 +90,7 @@ class BookingModel {
             u.id AS user_id,
             u.first_name,
             u.last_name,
+            u.phone_number,
             u.email,
             u.profile_pic_url
 
@@ -173,6 +174,7 @@ class BookingModel {
                id: booking.user_id,
                first_name: booking.first_name,
                last_name: booking.last_name,
+               phone_number: booking.phone_number,
                email: booking.email,
                profile_pic_url: booking.profile_pic_url,
             },
@@ -448,6 +450,140 @@ class BookingModel {
       } catch (error) {
          throw new AppError(
             "Error counting hotel bookings",
+            HTTP_STATUS.INTERNAL_SERVER_ERROR
+         );
+      }
+   }
+
+   // Count all bookings
+   static async countAllBookings(search, check_in, check_out, status) {
+      let values = [];
+      let query = `SELECT
+         COUNT(*) AS count 
+         FROM bookings b 
+         JOIN rooms r ON b.room_id = r.id 
+         JOIN room_types rt ON r.room_type_id = rt.id 
+         JOIN hotels h ON rt.hotel_id = h.id 
+         JOIN users u ON b.user_id = u.id 
+         WHERE 1=1`;
+      if (search) {
+         query += ` AND (b.booking_reference LIKE ? OR h.name LIKE ? OR r.room_number LIKE ? OR u.first_name LIKE ? OR u.last_name LIKE ? OR u.email LIKE ?)`;
+         values.push(
+            `%${search}%`,
+            `%${search}%`,
+            `%${search}%`,
+            `%${search}%`,
+            `%${search}%`,
+            `%${search}%`
+         );
+      }
+      if (check_in) {
+         query += ` AND b.check_in = ?`;
+         values.push(check_in);
+      }
+      if (check_out) {
+         query += ` AND b.check_out = ?`;
+         values.push(check_out);
+      }
+      if (status) {
+         query += ` AND b.status = ?`;
+         values.push(status);
+      }
+      try {
+         const [rows] = await pool.execute(query, values);
+         if (rows.length === 0) {
+            return 0;
+         }
+
+         return rows[0].count;
+      } catch (error) {
+         throw new AppError(
+            "Error counting all bookings",
+            HTTP_STATUS.INTERNAL_SERVER_ERROR
+         );
+      }
+   }
+
+   // Get all bookings
+   static async getAllBookings(
+      search,
+      check_in,
+      check_out,
+      status,
+      page,
+      limit
+   ) {
+      let values = [];
+      let query = `SELECT
+         b.id,
+         b.booking_reference,
+         b.check_in,
+         b.check_out,
+         b.actual_check_out,
+         b.status,
+         b.total_amount,
+         b.created_at,
+         b.updated_at,
+         r.id AS room_id,
+         r.room_number,
+         rt.id AS room_type_id,
+         rt.name AS room_type_name,
+         rt.price_per_night,
+         h.id AS hotel_id,
+         h.name AS hotel_name,
+         h.location AS hotel_location,
+         u.id AS user_id,
+         u.first_name,
+         u.last_name,
+         u.phone_number,
+         u.email,
+         u.profile_pic_url
+      FROM
+         bookings b
+      JOIN
+         rooms r ON b.room_id = r.id
+      JOIN
+         room_types rt ON r.room_type_id = rt.id
+      JOIN
+         hotels h ON rt.hotel_id = h.id
+      JOIN
+         users u ON b.user_id = u.id
+      WHERE
+         1=1`;
+      if (search) {
+         query += ` AND (b.booking_reference LIKE ? OR h.name LIKE ? OR r.room_number LIKE ? OR u.first_name LIKE ? OR u.last_name LIKE ? OR u.email LIKE ? OR u.phone_number LIKE ?)`;
+         values.push(
+            `%${search}%`,
+            `%${search}%`,
+            `%${search}%`,
+            `%${search}%`,
+            `%${search}%`,
+            `%${search}%`,
+            `%${search}%`
+         );
+      }
+      if (check_in) {
+         query += ` AND b.check_in = ?`;
+         values.push(check_in);
+      }
+      if (check_out) {
+         query += ` AND b.check_out = ?`;
+         values.push(check_out);
+      }
+      if (status) {
+         query += ` AND b.status = ?`;
+         values.push(status);
+      }
+      const offset = (page - 1) * limit;
+
+      query += ` LIMIT ${Number(limit)} OFFSET ${Number(offset)}`;
+      try {
+         const [rows] = await pool.execute(query, values);
+
+         return rows;
+      } catch (error) {
+         throw new AppError(
+            "Error getting bookings",
             HTTP_STATUS.INTERNAL_SERVER_ERROR
          );
       }

@@ -254,6 +254,59 @@ export class BookingService {
       }
    }
 
+   // Get all bookings service with pagination
+   static async getAllBookings(
+      search,
+      check_in,
+      check_out,
+      status,
+      page = PAGINATION.DEFAULT_PAGE,
+      limit = PAGINATION.DEFAULT_LIMIT
+   ) {
+      try {
+         const totalBookings = await BookingModel.countAllBookings(
+            search,
+            check_in,
+            check_out,
+            status
+         );
+         const totalPages = Math.ceil(totalBookings / limit);
+         // page should not exceed total pages
+         if (page > totalPages && page != 1) {
+            throw new AppError("Page not found.", HTTP_STATUS.NOT_FOUND);
+         }
+
+         const bookings = await BookingModel.getAllBookings(
+            search,
+            check_in,
+            check_out,
+            status,
+            page,
+            limit
+         );
+
+         // prepare pagination
+         const pagination = {
+            page,
+            limit,
+            total: totalBookings,
+            total_pages: totalPages,
+         };
+
+         return { bookings, pagination };
+      } catch (error) {
+         // Re-throw AppError instances, otherwise wrap in AppError
+         if (error instanceof AppError) {
+            throw error;
+         }
+
+         throw new AppError(
+            "Failed to get all bookings. Please try again.",
+            HTTP_STATUS.INTERNAL_SERVER_ERROR
+         );
+      }
+   }
+
    // Add review to booking service
    static async addReviewToBooking(user_id, booking_id, rating, comment) {
       try {

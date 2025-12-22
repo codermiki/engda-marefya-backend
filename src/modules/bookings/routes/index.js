@@ -5,6 +5,7 @@ import {
    cancelBooking,
    getUserBookings,
    getHotelBookings,
+   getAllBookings,
    addReviewToBooking,
 } from "../controller/index.js";
 import {
@@ -17,6 +18,7 @@ import {
    createBookingValidation,
    handleValidationErrors,
 } from "../../../middlewares/validation.js";
+import { USER_ROLES } from "../../../constants/user.js";
 
 const router = Router();
 
@@ -27,6 +29,14 @@ router.post(
    createBookingValidation,
    handleValidationErrors,
    createBooking
+);
+
+// Get all bookings
+router.get(
+   "/",
+   verifyToken,
+   requireRole([USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN]),
+   getAllBookings
 );
 
 // Get booking details
