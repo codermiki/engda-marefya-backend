@@ -7,6 +7,7 @@ import {
 } from "../../../utils/idGenerator.js";
 import { PAGINATION } from "../../../constants/pagination.js";
 import HotelModel from "../../hotels/model/HotelModel.js";
+import emailService from "../../../utils/emailService.js";
 
 export class BookingService {
    // Create booking service
@@ -361,8 +362,31 @@ export class BookingService {
          if (!booking) {
             throw new AppError("Booking not found.", HTTP_STATUS.NOT_FOUND);
          }
-         return booking;
+         const bookingDetails = await BookingModel.getBookingDetailsByReference(
+            reference
+         );
+         if (bookingDetails) {
+            // send confirmation email
+            await emailService.sendBookingConfirmationEmail(
+               bookingDetails?.user?.email,
+               {
+                  booking_reference: bookingDetails?.booking_reference,
+                  hotel_name: bookingDetails?.hotel?.name,
+                  hotel_location: bookingDetails?.hotel?.location,
+                  hotel_phone: bookingDetails?.hotel?.contact_number,
+                  room_type: bookingDetails?.room?.room_type?.name,
+                  room_number: bookingDetails?.room?.room_number,
+                  check_in: bookingDetails?.check_in,
+                  check_out: bookingDetails?.check_out,
+                  total_amount: bookingDetails?.total_amount,
+                  status: bookingDetails?.status,
+               }
+            );
+         }
+
+         return bookingDetails;
       } catch (error) {
+         console.log(error);
          // Re-throw AppError instances, otherwise wrap in AppError
          if (error instanceof AppError) {
             throw error;

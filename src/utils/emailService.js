@@ -193,6 +193,43 @@ class EmailService {
    }
 
    /**
+    * Send hotel approved email
+    */
+   async sendHotelApprovedEmail(toEmail, hotelName) {
+      try {
+         const mailOptions = {
+            to: toEmail,
+            subject: "Hotel Approved - Engda Marefya",
+            html: this.getHotelApprovedEmailTemplate(hotelName),
+         };
+
+         await this.sendEmail(mailOptions, "hotel_approved");
+      } catch (error) {
+         console.error("Failed to send hotel approved email:", error);
+      }
+   }
+
+   /**
+    * Send hotel rejected email
+    */
+   async sendHotelRejectedEmail(toEmail, hotelName, rejectionReason) {
+      try {
+         const mailOptions = {
+            to: toEmail,
+            subject: "Hotel Rejected - Engda Marefya",
+            html: this.getHotelRejectedEmailTemplate(
+               hotelName,
+               rejectionReason
+            ),
+         };
+
+         await this.sendEmail(mailOptions, "hotel_rejected");
+      } catch (error) {
+         console.error("Failed to send hotel rejected email:", error);
+      }
+   }
+
+   /**
     * Email Templates
     */
 
@@ -425,12 +462,18 @@ class EmailService {
                  bookingDetails.booking_reference
               }</p>
               <p><strong>Hotel:</strong> ${bookingDetails.hotel_name}</p>
+              <p><strong>Hotel Location:</strong> ${
+                 bookingDetails.hotel_location
+              }</p>
+              <p><strong>Hotel Phone:</strong> ${bookingDetails.hotel_phone}</p>
               <p><strong>Room Type:</strong> ${bookingDetails.room_type}</p>
+              <p><strong>Room Number:</strong> ${bookingDetails.room_number}</p>
               <p><strong>Check-in:</strong> ${bookingDetails.check_in}</p>
               <p><strong>Check-out:</strong> ${bookingDetails.check_out}</p>
               <p><strong>Total Amount:</strong> ${
                  bookingDetails.total_amount
               } ETB</p>
+              <p><strong>Status:</strong> ${bookingDetails.status}</p>
             </div>
             
             <p>We look forward to hosting you!</p>
@@ -442,6 +485,204 @@ class EmailService {
       </body>
       </html>
     `;
+   }
+
+   getHotelApprovedEmailTemplate(hotelName) {
+      return `
+  <!DOCTYPE html>
+  <html>
+  <head>
+    <meta charset="UTF-8" />
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        line-height: 1.6;
+        color: #333333;
+        background-color: #ffffff;
+      }
+      .container {
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+      .header {
+        background-color: #059669;
+        color: #ffffff;
+        padding: 24px;
+        text-align: center;
+      }
+      .content {
+        padding: 30px;
+        background-color: #f9fafb;
+      }
+      .content h2 {
+        color: #111827;
+      }
+      .footer {
+        text-align: center;
+        padding: 20px;
+        color: #6b7280;
+        font-size: 14px;
+      }
+      .highlight {
+        font-weight: bold;
+        color: #059669;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>Hotel Approved</h1>
+      </div>
+
+      <div class="content">
+        <h2>Congratulations!</h2>
+
+        <p>
+          We are pleased to inform you that your hotel,
+          <span class="highlight">${hotelName}</span>,
+          has been successfully approved on the Engda Marefya platform.
+        </p>
+
+        <p>
+          Your listing is now active and visible to guests. You can log in to
+          your dashboard to manage rooms, pricing, availability, and bookings.
+        </p>
+
+        <p>
+          If you have not completed your hotel profile, we recommend doing so to
+          improve visibility and attract more guests.
+        </p>
+
+        <p>
+          Thank you for choosing Engda Marefya as your hotel booking partner. We
+          look forward to supporting your success.
+        </p>
+
+        <p>
+          If you have any questions or need assistance, please contact our
+          support team.
+        </p>
+      </div>
+
+      <div class="footer">
+        <p>&copy; ${new Date().getFullYear()} Engda Marefya. All rights reserved.</p>
+      </div>
+    </div>
+  </body>
+  </html>
+  `;
+   }
+
+   getHotelRejectedEmailTemplate(hotelName, rejectionReason = null) {
+      return `
+  <!DOCTYPE html>
+  <html>
+  <head>
+    <meta charset="UTF-8" />
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        line-height: 1.6;
+        color: #333333;
+        background-color: #ffffff;
+      }
+      .container {
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+      .header {
+        background-color: #dc2626;
+        color: #ffffff;
+        padding: 24px;
+        text-align: center;
+      }
+      .content {
+        padding: 30px;
+        background-color: #f9fafb;
+      }
+      .content h2 {
+        color: #111827;
+      }
+      .reason-box {
+        margin: 20px 0;
+        padding: 16px;
+        background-color: #fee2e2;
+        border-left: 4px solid #dc2626;
+        color: #7f1d1d;
+      }
+      .footer {
+        text-align: center;
+        padding: 20px;
+        color: #6b7280;
+        font-size: 14px;
+      }
+      .highlight {
+        font-weight: bold;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>Hotel Submission Update</h1>
+      </div>
+
+      <div class="content">
+        <h2>Submission Not Approved</h2>
+
+        <p>
+          Thank you for submitting your hotel,
+          <span class="highlight">${hotelName}</span>,
+          to the Engda Marefya platform.
+        </p>
+
+        <p>
+          After careful review, we regret to inform you that your hotel listing
+          could not be approved at this time.
+        </p>
+
+        ${
+           rejectionReason
+              ? `
+              <div class="reason-box">
+                <strong>Reason:</strong>
+                <p>${rejectionReason}</p>
+              </div>
+            `
+              : `
+              <p>
+                The submission did not fully meet our listing requirements or
+                verification standards.
+              </p>
+            `
+        }
+
+        <p>
+          You may update your hotel information and resubmit your listing once
+          the required changes have been addressed.
+        </p>
+
+        <p>
+          If you believe this decision was made in error or need clarification,
+          please contact our support team for assistance.
+        </p>
+
+        <p>
+          We appreciate your interest in Engda Marefya and encourage you to
+          resubmit once the issues are resolved.
+        </p>
+      </div>
+
+      <div class="footer">
+        <p>&copy; ${new Date().getFullYear()} Engda Marefya. All rights reserved.</p>
+      </div>
+    </div>
+  </body>
+  </html>
+  `;
    }
 }
 

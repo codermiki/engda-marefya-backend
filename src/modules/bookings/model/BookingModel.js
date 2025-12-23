@@ -197,6 +197,150 @@ class BookingModel {
       }
    }
 
+   // Get booking details with hotel rating and room type rating with review count by joining reviews table
+   static async getBookingDetailsByReference(bookingReference) {
+      const query = `
+         SELECT
+            b.id,
+            b.booking_reference,
+            b.check_in,
+            b.check_out,
+            b.actual_check_out,
+            b.status,
+            b.total_amount,
+            b.created_at,
+
+            r.id AS room_id,
+            r.room_number,
+
+            rt.id AS room_type_id,
+            rt.name AS room_type_name,
+            rt.price_per_night,
+            rt.bed_type,
+            rt.number_of_beds,
+            rt.description AS room_type_description,
+
+            h.id AS hotel_id,
+            h.name AS hotel_name,
+            h.description AS hotel_description,
+            h.location AS hotel_location,
+            h.profile_pic_url AS hotel_profile_pic_url,
+            h.contact_info AS hotel_contact_number,
+
+            -- Room Type Reviews
+            COALESCE(rt_reviews.review_count, 0) AS room_type_reviews_count,
+            COALESCE(rt_reviews.avg_rating, 0) AS room_type_average_rating,
+
+            -- Hotel Reviews
+            COALESCE(h_reviews.review_count, 0) AS hotel_reviews_count,
+            COALESCE(h_reviews.avg_rating, 0) AS hotel_average_rating,
+
+            u.id AS user_id,
+            u.first_name,
+            u.last_name,
+            u.phone_number,
+            u.email,
+            u.profile_pic_url
+
+         FROM bookings b
+         JOIN rooms r ON b.room_id = r.id
+         JOIN room_types rt ON r.room_type_id = rt.id
+         JOIN hotels h ON rt.hotel_id = h.id
+         JOIN users u ON b.user_id = u.id
+
+         -- Room Type review aggregation
+         LEFT JOIN (
+            SELECT
+               room_type_id,
+               COUNT(*) AS review_count,
+               ROUND(AVG(rating), 1) AS avg_rating
+            FROM reviews
+            GROUP BY room_type_id
+         ) rt_reviews ON rt.id = rt_reviews.room_type_id
+
+         -- Hotel review aggregation
+         LEFT JOIN (
+            SELECT
+               hotel_id,
+               COUNT(*) AS review_count,
+               ROUND(AVG(rating), 1) AS avg_rating
+            FROM reviews
+            GROUP BY hotel_id
+         ) h_reviews ON h.id = h_reviews.hotel_id
+
+         WHERE b.booking_reference = ?;
+      `;
+
+      try {
+         const [rows] = await pool.execute(query, [bookingReference]);
+
+         if (rows.length === 0) {
+            return null;
+         }
+
+         const booking = rows[0];
+
+         const checkInDate = new Date(booking.check_in);
+         const checkOutDate = new Date(booking.check_out);
+         const timeDiff = Math.abs(
+            checkOutDate.getTime() - checkInDate.getTime()
+         );
+         const nights = Math.ceil(timeDiff / (1000 * 3600 * 24));
+
+         return {
+            id: booking.id,
+            booking_reference: booking.booking_reference,
+            room: {
+               id: booking.room_id,
+               room_number: booking.room_number,
+               room_type: {
+                  id: booking.room_type_id,
+                  name: booking.room_type_name,
+                  price_per_night: parseFloat(booking.price_per_night),
+                  bed_type: booking.bed_type,
+                  number_of_beds: booking.number_of_beds,
+                  description: booking.room_type_description,
+                  reviews_count: booking.room_type_reviews_count,
+                  average_rating: booking.room_type_average_rating,
+               },
+            },
+            hotel: {
+               id: booking.hotel_id,
+               name: booking.hotel_name,
+               logo_url: booking.logo_url,
+               location: booking.hotel_location,
+               description: booking.hotel_description,
+               contact_number: booking.hotel_contact_number,
+               profile_pic_url: booking.hotel_profile_pic_url,
+               reviews_count: booking.hotel_reviews_count,
+               average_rating: booking.hotel_average_rating,
+            },
+            user: {
+               id: booking.user_id,
+               first_name: booking.first_name,
+               last_name: booking.last_name,
+               phone_number: booking.phone_number,
+               email: booking.email,
+               profile_pic_url: booking.profile_pic_url,
+            },
+            check_in: booking.check_in,
+            check_out: booking.check_out,
+            actual_check_out: booking.actual_check_out
+               ? booking.actual_check_out
+               : null,
+            status: booking.status,
+            nights: nights,
+            total_amount: parseFloat(booking.total_amount),
+            created_at: booking.created_at,
+         };
+      } catch (error) {
+         throw new AppError(
+            "Error fetching booking details",
+            HTTP_STATUS.INTERNAL_SERVER_ERROR
+         );
+      }
+   }
+
    // Get payment details
    static async getPaymentByBookingId(bookingId) {
       const query = `

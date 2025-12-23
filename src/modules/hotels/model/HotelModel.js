@@ -52,9 +52,16 @@ class HotelModel {
    }
 
    // Approve hotel
-   static async updateHotelStatus(id, status) {
-      const query = `UPDATE hotels SET status = ? WHERE id = ?`;
-      const values = [status, id];
+   static async updateHotelStatus(id, status, rejection_reason) {
+      let query;
+      let values = [];
+      if (!rejection_reason) {
+         query = `UPDATE hotels SET status = ? WHERE id = ?`;
+         values = [status, id];
+      } else {
+         query = `UPDATE hotels SET status = ?, rejection_reason = ? WHERE id = ?`;
+         values = [status, rejection_reason, id];
+      }
 
       try {
          const [result] = await pool.execute(query, values);
@@ -62,7 +69,7 @@ class HotelModel {
             return null;
          }
 
-         return { id };
+         return { id, status, rejection_reason };
       } catch (error) {
          throw new AppError(
             "Internal server error",
@@ -701,8 +708,16 @@ class HotelModel {
       const values = [];
 
       if (search) {
-         query += ` WHERE name LIKE ? OR location LIKE ? OR description LIKE ?`;
-         values.push(`%${search}%`, `%${search}%`, `%${search}%`);
+         query += ` WHERE name LIKE ? OR location LIKE ? OR description LIKE ? OR first_name LIKE ? OR last_name LIKE ? OR email LIKE ? OR phone_number LIKE ?`;
+         values.push(
+            `%${search}%`,
+            `%${search}%`,
+            `%${search}%`,
+            `%${search}%`,
+            `%${search}%`,
+            `%${search}%`,
+            `%${search}%`
+         );
       }
 
       if (status) {
@@ -1221,9 +1236,8 @@ class HotelModel {
       try {
          const [rows] = await pool.execute(query, [userId]);
          if (rows.length === 0) {
-            throw new AppError("No hotels found", HTTP_STATUS.NOT_FOUND);
+            return [];
          }
-
          return rows[0];
       } catch (error) {
          if (error instanceof AppError) {

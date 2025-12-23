@@ -1,6 +1,7 @@
 import { HTTP_STATUS } from "../../../constants/http.js";
 import { PAGINATION } from "../../../constants/pagination.js";
 import AppError from "../../../utils/AppError.js";
+import emailService from "../../../utils/emailService.js";
 import { generateId } from "../../../utils/idGenerator.js";
 import HotelModel from "../model/HotelModel.js";
 
@@ -51,15 +52,30 @@ export class HotelService {
    }
 
    // Update hotel status
-   static async updateHotelStatus(hotelId, status) {
+   static async updateHotelStatus(hotelId, status, rejection_reason = null) {
       try {
          const updatedHotel = await HotelModel.updateHotelStatus(
             hotelId,
-            status
+            status,
+            rejection_reason
          );
 
          if (!updatedHotel) {
             throw new AppError("Hotel not found.", HTTP_STATUS.NOT_FOUND);
+         }
+
+         if (updatedHotel.status === "approved") {
+            const hotel = await HotelModel.getHotelById(updatedHotel.id);
+            await emailService.sendHotelApprovedEmail(hotel.email);
+         }
+
+         if (updatedHotel.status === "rejected") {
+            const hotel = await HotelModel.getHotelById(updatedHotel.id);
+            await emailService.sendHotelRejectedEmail(
+               hotel.email,
+               hotel.name,
+               updatedHotel?.rejection_reason
+            );
          }
 
          return updatedHotel;

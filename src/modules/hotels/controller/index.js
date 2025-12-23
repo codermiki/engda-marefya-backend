@@ -56,6 +56,7 @@ export const updateHotelStatus = async (req, res, next) => {
    try {
       const id = req?.params?.id;
       const status = req?.body?.status;
+      const rejection_reason = req?.body?.rejection_reason;
 
       if (!id || !status) {
          throw new AppError(
@@ -64,7 +65,11 @@ export const updateHotelStatus = async (req, res, next) => {
          );
       }
 
-      const data = await HotelService.updateHotelStatus(id, status);
+      const data = await HotelService.updateHotelStatus(
+         id,
+         status,
+         rejection_reason
+      );
 
       return successResponse(res, {
          message: "Hotel status updated successfully",
