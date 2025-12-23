@@ -52,7 +52,11 @@ router.get("/user/:id", verifyToken, getUserBookings);
 router.get(
    "/hotel/:id",
    verifyToken,
-   requireRole([USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN]),
+   requireRole([
+      USER_ROLES.HOTEL_OWNER,
+      USER_ROLES.ADMIN,
+      USER_ROLES.SUPER_ADMIN,
+   ]),
    requireHotelOwnership([USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN]),
    getHotelBookings
 );

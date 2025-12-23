@@ -135,19 +135,8 @@ export const forgotPassword = async (req, res, next) => {
 // Reset Password controller
 export const resetPassword = async (req, res, next) => {
    try {
-      const { token } = req.query;
-      const { new_password } = req.body;
-
-      if (!token) {
-         throw new AppError("Reset token is required", HTTP_STATUS.BAD_REQUEST);
-      }
-
-      if (!new_password) {
-         throw new AppError(
-            "New password is required",
-            HTTP_STATUS.BAD_REQUEST
-         );
-      }
+      const token = req?.body?.token;
+      const new_password = req?.body?.new_password;
 
       await AuthService.resetPassword(token, new_password);
 
