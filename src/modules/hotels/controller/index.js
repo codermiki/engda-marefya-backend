@@ -9,6 +9,8 @@ export const createHotel = async (req, res, next) => {
       const {
          name,
          location,
+         latitude,
+         longitude,
          contact_info,
          description,
          business_license_url,
@@ -20,6 +22,8 @@ export const createHotel = async (req, res, next) => {
       if (
          !name ||
          !location ||
+         !latitude ||
+         !longitude ||
          !contact_info ||
          !description ||
          !business_license_url ||
@@ -39,6 +43,8 @@ export const createHotel = async (req, res, next) => {
          owner_id,
          name,
          location,
+         latitude,
+         longitude,
          contact_info,
          description,
          business_license_url,
@@ -800,6 +806,22 @@ export const getHotelAnalytics = async (req, res, next) => {
 
       return successResponse(res, {
          message: "Hotel analytics fetched successfully",
+         data,
+         statusCode: HTTP_STATUS.OK,
+      });
+   } catch (error) {
+      next(error);
+   }
+};
+
+// Get hotel location for search suggestions
+export const getHotelsLocation = async (req, res, next) => {
+   try {
+      const search = req?.query?.search;
+      const data = await HotelService.getHotelsLocation(search);
+
+      return successResponse(res, {
+         message: "Hotel location fetched successfully",
          data,
          statusCode: HTTP_STATUS.OK,
       });

@@ -10,6 +10,8 @@ class HotelModel {
          owner_id,
          name,
          location,
+         latitude,
+         longitude,
          contact_info,
          description,
          business_license_url,
@@ -17,13 +19,15 @@ class HotelModel {
          profile_pic_url,
          profile_pic_public_id,
       } = hotelData;
-      const query = `INSERT INTO hotels (id, owner_id, name, location, contact_info, description, business_license, business_license_public_id, profile_pic_url, profile_pic_public_id)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+      const query = `INSERT INTO hotels (id, owner_id, name, location, latitude, longitude, contact_info, description, business_license, business_license_public_id, profile_pic_url, profile_pic_public_id)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
       const values = [
          id,
          owner_id,
          name,
          location,
+         latitude,
+         longitude,
          contact_info,
          description,
          business_license_url,
@@ -87,6 +91,8 @@ class HotelModel {
       const allowedFields = [
          "name",
          "location",
+         "latitude",
+         "longitude",
          "contact_info",
          "discription",
          "profile_pic_url",
@@ -209,6 +215,8 @@ class HotelModel {
             rt.updated_at,
             h.name AS hotel_name,
             h.location AS hotel_location,
+            h.latitude,
+            h.longitude,
             h.contact_info,
             h.description AS hotel_description,
             h.profile_pic_url,
@@ -497,6 +505,8 @@ class HotelModel {
                h.id,
                h.name,
                h.location,
+               h.latitude,
+               h.longitude,
                h.contact_info,
                h.description,
                h.business_license,
@@ -639,7 +649,7 @@ class HotelModel {
 
    // Get hotels by owner id
    static async getHotelsByOwnerId(ownerId) {
-      const query = `SELECT id, owner_id, name, location, contact_info, description, business_license, profile_pic_url
+      const query = `SELECT id, owner_id, name, location,latitude,longitude, contact_info, description, business_license, profile_pic_url
           FROM hotels
           WHERE owner_id = ?`;
       const values = [ownerId];
@@ -709,7 +719,7 @@ class HotelModel {
 
       // add hotel owner info
       let query = `
-        SELECT h.id, h.owner_id, h.name, h.location, h.contact_info, h.description, h.business_license, h.profile_pic_url, h.status, h.created_at, o.first_name, o.last_name, o.email ,o.phone_number,o.profile_pic_url as owner_profile_pic_url
+        SELECT h.id, h.owner_id, h.name, h.location, h.latitude, h.longitude, h.contact_info, h.description, h.business_license, h.profile_pic_url, h.status, h.created_at, o.first_name, o.last_name, o.email ,o.phone_number,o.profile_pic_url as owner_profile_pic_url
         FROM hotels h
         JOIN users o ON h.owner_id = o.id
     `;
@@ -1540,6 +1550,25 @@ class HotelModel {
          }
 
          return rows[0];
+      } catch (error) {
+         if (error instanceof AppError) {
+            throw error;
+         }
+         throw new AppError(
+            "Internal server error",
+            HTTP_STATUS.INTERNAL_SERVER_ERROR
+         );
+      }
+   }
+
+   // Get hotel location for search suggestions
+   static async getHotelsLocation(search) {
+      console.log(search);
+      const query = `SELECT id,location FROM hotels WHERE 1=1 AND location LIKE ?`;
+      try {
+         const [rows] = await pool.execute(query, [`%${search}%`]);
+
+         return rows;
       } catch (error) {
          if (error instanceof AppError) {
             throw error;

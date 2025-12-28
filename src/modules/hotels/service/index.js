@@ -12,6 +12,8 @@ export class HotelService {
       owner_id,
       name,
       location,
+      latitude,
+      longitude,
       contact_info,
       description,
       business_license_url,
@@ -28,6 +30,8 @@ export class HotelService {
             owner_id,
             name,
             location,
+            latitude,
+            longitude,
             contact_info,
             description,
             business_license_url,
@@ -211,6 +215,8 @@ export class HotelService {
                id: roomType.hotel_id,
                name: roomType.hotel_name,
                location: roomType.hotel_location,
+               latitude: roomType.latitude,
+               longitude: roomType.longitude,
                contact_info: roomType.contact_info,
                description: roomType.hotel_description,
                profile_pic_url: roomType.profile_pic_url,
@@ -1002,6 +1008,24 @@ export class HotelService {
 
          throw new AppError(
             "Failed to retrieve hotel analytics. Please try again.",
+            HTTP_STATUS.INTERNAL_SERVER_ERROR
+         );
+      }
+   }
+
+   // Get hotel location for search suggestions
+   static async getHotelsLocation(search) {
+      try {
+         const hotels = await HotelModel.getHotelsLocation(search);
+
+         return hotels;
+      } catch (error) {
+         if (error instanceof AppError) {
+            throw error;
+         }
+
+         throw new AppError(
+            "Failed to retrieve hotel location. Please try again.",
             HTTP_STATUS.INTERNAL_SERVER_ERROR
          );
       }

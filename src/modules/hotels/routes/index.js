@@ -32,6 +32,7 @@ import {
    getHotelAnalytics,
    updateHotelStatus,
    getBedTypes,
+   getHotelsLocation,
 } from "../controller/index.js";
 import {
    verifyToken,
@@ -56,6 +57,9 @@ import {
 import { USER_ROLES } from "../../../constants/user.js";
 
 const router = Router();
+
+// Get hotel location for search suggestions
+router.get("/location", getHotelsLocation);
 
 // Get hotel analytics
 router.get(
