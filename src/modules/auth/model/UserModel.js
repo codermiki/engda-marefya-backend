@@ -295,6 +295,7 @@ class UserModel {
          "last_name",
          "phone_number",
          "profile_pic_url",
+         "profile_pic_public_id",
          "password_hash",
          "is_email_verified",
          "status",
@@ -356,7 +357,6 @@ class UserModel {
       const query = "DELETE FROM users WHERE id = ?";
 
       try {
-         const user = await this.findById(id);
          const [result] = await pool.execute(query, [id]);
 
          if (result.affectedRows === 0) {

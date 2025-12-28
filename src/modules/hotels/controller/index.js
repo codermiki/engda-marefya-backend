@@ -12,7 +12,9 @@ export const createHotel = async (req, res, next) => {
          contact_info,
          description,
          business_license_url,
+         business_license_public_id,
          profile_pic_url,
+         profile_pic_public_id,
       } = req?.body;
 
       if (
@@ -21,7 +23,9 @@ export const createHotel = async (req, res, next) => {
          !contact_info ||
          !description ||
          !business_license_url ||
-         !profile_pic_url
+         !profile_pic_url ||
+         !business_license_public_id ||
+         !profile_pic_public_id
       ) {
          throw new AppError("All fields are required", HTTP_STATUS.BAD_REQUEST);
       }
@@ -38,7 +42,9 @@ export const createHotel = async (req, res, next) => {
          contact_info,
          description,
          business_license_url,
+         business_license_public_id,
          profile_pic_url,
+         profile_pic_public_id,
       });
 
       return successResponse(res, {
@@ -112,6 +118,7 @@ export const createRoomType = async (req, res, next) => {
          description,
          price_per_night,
          main_image_url,
+         main_image_public_id,
          bed_type,
          number_of_beds,
       } = req.body;
@@ -126,6 +133,7 @@ export const createRoomType = async (req, res, next) => {
          description,
          price_per_night,
          main_image_url,
+         main_image_public_id,
          bed_type,
          number_of_beds,
       });

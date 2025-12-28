@@ -1,3 +1,4 @@
+import cloudinary from "../../../config/cloudinary.js";
 import { HTTP_STATUS } from "../../../constants/http.js";
 import { PAGINATION } from "../../../constants/pagination.js";
 import AppError from "../../../utils/AppError.js";
@@ -14,7 +15,9 @@ export class HotelService {
       contact_info,
       description,
       business_license_url,
+      business_license_public_id,
       profile_pic_url,
+      profile_pic_public_id,
    }) {
       try {
          // Generate Object Id
@@ -28,7 +31,9 @@ export class HotelService {
             contact_info,
             description,
             business_license_url,
+            business_license_public_id,
             profile_pic_url,
+            profile_pic_public_id,
          });
          if (!newHotel) {
             throw new AppError(
@@ -94,6 +99,15 @@ export class HotelService {
    // Update hotel
    static async updateHotel(hotelId, updateData) {
       try {
+         const hotel = await HotelModel.getHotelById(hotelId);
+         if (!hotel) {
+            throw new AppError("Hotel not found.", HTTP_STATUS.NOT_FOUND);
+         }
+         if (updateData?.profile_pic_url) {
+            if (hotel?.profile_pic_public_id) {
+               await cloudinary.uploader.destroy(hotel?.profile_pic_public_id);
+            }
+         }
          const updatedHotel = await HotelModel.updateHotel(hotelId, updateData);
 
          if (!updatedHotel) {
@@ -120,6 +134,7 @@ export class HotelService {
       description,
       price_per_night,
       main_image_url,
+      main_image_public_id,
       bed_type,
       number_of_beds,
    }) {
@@ -134,6 +149,7 @@ export class HotelService {
             description,
             price_per_night,
             main_image_url,
+            main_image_public_id,
             bed_type,
             number_of_beds,
          });
@@ -519,13 +535,19 @@ export class HotelService {
    // Delete image from a room type
    static async deleteRoomTypeImage(imageId) {
       try {
-         const image = await HotelModel.deleteRoomTypeImage(imageId);
+         const image = await HotelModel.getRoomTypeImageById(imageId);
 
          if (!image) {
             throw new AppError("Image not found.", HTTP_STATUS.NOT_FOUND);
          }
+         if (image?.image_public_id) {
+            // delete image from cloudinary
+            await cloudinary.uploader.destroy(image?.image_public_id);
+         }
 
-         return { image };
+         const deletedImage = await HotelModel.deleteRoomTypeImage(imageId);
+
+         return { deletedImage };
       } catch (error) {
          if (error instanceof AppError) {
             throw error;

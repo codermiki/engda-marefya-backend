@@ -13,10 +13,12 @@ class HotelModel {
          contact_info,
          description,
          business_license_url,
+         business_license_public_id,
          profile_pic_url,
+         profile_pic_public_id,
       } = hotelData;
-      const query = `INSERT INTO hotels (id, owner_id, name, location, contact_info, description, business_license, profile_pic_url)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
+      const query = `INSERT INTO hotels (id, owner_id, name, location, contact_info, description, business_license, business_license_public_id, profile_pic_url, profile_pic_public_id)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
       const values = [
          id,
          owner_id,
@@ -25,7 +27,9 @@ class HotelModel {
          contact_info,
          description,
          business_license_url,
+         business_license_public_id,
          profile_pic_url,
+         profile_pic_public_id,
       ];
 
       try {
@@ -86,6 +90,7 @@ class HotelModel {
          "contact_info",
          "discription",
          "profile_pic_url",
+         "profile_pic_public_id",
       ];
 
       const setClause = [];
@@ -147,11 +152,12 @@ class HotelModel {
          description,
          price_per_night,
          main_image_url,
+         main_image_public_id,
          bed_type,
          number_of_beds,
       } = roomTypeData;
-      const query = `INSERT INTO room_types (id, hotel_id, name, description, price_per_night, main_image_url, bed_type, number_of_beds)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
+      const query = `INSERT INTO room_types (id, hotel_id, name, description, price_per_night, main_image_url, main_image_public_id, bed_type, number_of_beds)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`;
       const values = [
          id,
          hotel_id,
@@ -159,6 +165,7 @@ class HotelModel {
          description,
          price_per_night,
          main_image_url,
+         main_image_public_id,
          bed_type,
          number_of_beds,
       ];
@@ -493,7 +500,9 @@ class HotelModel {
                h.contact_info,
                h.description,
                h.business_license,
+               h.business_license_public_id,
                h.profile_pic_url,
+               h.profile_pic_public_id,
                h.status,
                h.owner_id,
                u.first_name,
@@ -1510,6 +1519,27 @@ class HotelModel {
          }
 
          return rows[0].count;
+      } catch (error) {
+         if (error instanceof AppError) {
+            throw error;
+         }
+         throw new AppError(
+            "Internal server error",
+            HTTP_STATUS.INTERNAL_SERVER_ERROR
+         );
+      }
+   }
+
+   // get room type image by image id
+   static async getRoomTypeImageById(imageId) {
+      const query = `SELECT * FROM room_type_images WHERE id = ?`;
+      try {
+         const [rows] = await pool.execute(query, [imageId]);
+         if (rows.length === 0) {
+            return null;
+         }
+
+         return rows[0];
       } catch (error) {
          if (error instanceof AppError) {
             throw error;
