@@ -15,16 +15,34 @@ import paymentsRoutes from "./modules/payments/routes/index.js";
 import { logger } from "./utils/logger.js";
 import { HotelService } from "./modules/hotels/service/index.js";
 import { UserService } from "./modules/users/service/index.js";
+import installRoutes from "./modules/install/routes/index.js";
 const app = express();
 
 // ====== Global Middlewares ======
 app.use(cors()); // Enable Cross-Origin Resource Sharing
 app.use(express.json()); // Parse incoming JSON requests
+/**
+ * GLOBAL invalid JSON handler
+ * Must be AFTER express.json()
+ */
+app.use((err, req, res, next) => {
+   if (err instanceof SyntaxError && err.status === 400 && "body" in err) {
+      return res.status(400).json({
+         success: false,
+         message: "Invalid JSON body",
+      });
+   }
+
+   next(err);
+});
 app.set("trust proxy", 1); // Enable "trust proxy" if using Nginx or reverse proxy
 app.use(requestLogger);
 
 // ====== Global Rate Limiter ======
 app.use(rateLimiter());
+
+// ====== System installation ======
+app.use("/install", installRoutes);
 
 // ====== Health Check Route ======
 app.use("/api/v1/health", (req, res) => {

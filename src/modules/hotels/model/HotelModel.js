@@ -1563,7 +1563,6 @@ class HotelModel {
 
    // Get hotel location for search suggestions
    static async getHotelsLocation(search) {
-      console.log(search);
       const query = `SELECT id,location FROM hotels WHERE 1=1 AND location LIKE ?`;
       try {
          const [rows] = await pool.execute(query, [`%${search}%`]);

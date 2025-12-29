@@ -371,6 +371,29 @@ class UserModel {
          );
       }
    }
+
+   // check if super admin exists
+   static async isSuperAdminExists() {
+      try {
+         const [superAdmin] = await pool.query(
+            "SELECT * FROM users WHERE role = 'super_admin'"
+         );
+         if (superAdmin.length > 0) {
+            return true;
+         }
+         return false;
+      } catch (error) {
+         // Re-throw AppError instances, otherwise wrap in AppError
+         if (error instanceof AppError) {
+            throw error;
+         }
+
+         throw new AppError(
+            "Internal server error",
+            HTTP_STATUS.INTERNAL_SERVER_ERROR
+         );
+      }
+   }
 }
 
 export default UserModel;

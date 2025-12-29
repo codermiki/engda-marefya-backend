@@ -386,7 +386,6 @@ export class BookingService {
 
          return bookingDetails;
       } catch (error) {
-         console.log(error);
          // Re-throw AppError instances, otherwise wrap in AppError
          if (error instanceof AppError) {
             throw error;
