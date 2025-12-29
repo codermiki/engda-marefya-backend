@@ -97,6 +97,8 @@ class HotelModel {
          "discription",
          "profile_pic_url",
          "profile_pic_public_id",
+         "business_license",
+         "business_license_public_id",
       ];
 
       const setClause = [];
@@ -819,6 +821,7 @@ class HotelModel {
       const values = [];
       const conditions = [];
 
+      conditions.push(`h.status = 'approved'`);
       conditions.push(`rt.status = 'active'`);
 
       if (search) {

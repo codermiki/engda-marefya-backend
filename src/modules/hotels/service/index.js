@@ -112,6 +112,22 @@ export class HotelService {
                await cloudinary.uploader.destroy(hotel?.profile_pic_public_id);
             }
          }
+         if (updateData?.business_license) {
+            if (hotel?.business_license_public_id) {
+               await cloudinary.uploader.destroy(
+                  hotel?.business_license_public_id,
+                  {
+                     resource_type: "raw",
+                  }
+               );
+            }
+            const updateHotelStatus = await HotelModel.updateHotelStatus(
+               hotelId,
+               "pending",
+               null
+            );
+         }
+
          const updatedHotel = await HotelModel.updateHotel(hotelId, updateData);
 
          if (!updatedHotel) {
