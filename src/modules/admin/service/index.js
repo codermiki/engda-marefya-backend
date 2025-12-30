@@ -246,7 +246,7 @@ export class AdminService {
    }
 
    // Create amenity service
-   static async createAmenity({ name, icon_url }) {
+   static async createAmenity({ name, icon_url, icon_public_id }) {
       try {
          // Generate Object Id
          const id = generateId();
@@ -255,6 +255,7 @@ export class AdminService {
             id,
             name,
             icon_url,
+            icon_public_id,
          });
          if (!newAmenity) {
             throw new AppError(

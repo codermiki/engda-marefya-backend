@@ -132,16 +132,17 @@ export const removeUser = async (req, res, next) => {
 // Create a new Amenities
 export const createAmenity = async (req, res, next) => {
    try {
-      const { name, icon_url } = req.body;
+      const { name, icon_url, icon_public_id } = req.body;
 
       // Basic validation
-      if (!name || !icon_url) {
+      if (!name || !icon_url || !icon_public_id) {
          throw new AppError("All fields are required", HTTP_STATUS.BAD_REQUEST);
       }
       // Call service to create room type
       const data = await AdminService.createAmenity({
          name,
          icon_url,
+         icon_public_id,
       });
 
       return successResponse(res, {

@@ -42,7 +42,7 @@ app.use(requestLogger);
 app.use(rateLimiter());
 
 // ====== System installation ======
-app.use("/install", installRoutes);
+app.use("/api/v1/install", installRoutes);
 
 // ====== Health Check Route ======
 app.use("/api/v1/health", (req, res) => {

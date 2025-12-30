@@ -312,11 +312,11 @@ class HotelModel {
 
    // Create Amenities
    static async createAmenity(amenityData) {
-      const { id, name, icon_url } = amenityData;
+      const { id, name, icon_url, icon_public_id } = amenityData;
 
-      const query = `INSERT INTO amenities (id, name, icon_url)
-        VALUES (?, ?, ?)`;
-      const values = [id, name, icon_url];
+      const query = `INSERT INTO amenities (id, name, icon_url, icon_public_id)
+        VALUES (?, ?, ?, ?)`;
+      const values = [id, name, icon_url, icon_public_id];
       try {
          const [result] = await pool.execute(query, values);
          if (result.affectedRows === 0) {
@@ -342,7 +342,7 @@ class HotelModel {
 
    // get amenities
    static async getAmenities() {
-      const query = `SELECT id, name, icon_url
+      const query = `SELECT id, name, icon_url, icon_public_id
         FROM amenities`;
       try {
          const [rows] = await pool.execute(query);
