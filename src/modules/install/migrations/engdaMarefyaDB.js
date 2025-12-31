@@ -202,6 +202,45 @@ const wishlistsTableQuery = `CREATE TABLE IF NOT EXISTS wishlists (
           FOREIGN KEY (room_type_id) REFERENCES room_types(id) ON DELETE CASCADE
       )`;
 
+// Bed Types Table
+const bedTypesTableQuery = `CREATE TABLE IF NOT EXISTS bed_types (
+          id CHAR(24) PRIMARY KEY,
+          name VARCHAR(100) NOT NULL,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+      )`;
+
+// Hotel Bank Details Table
+const hotelBankDetailsTableQuery = `CREATE TABLE IF NOT EXISTS hotel_bank_details (
+          id BIGINT AUTO_INCREMENT PRIMARY KEY,
+          hotel_id CHAR(24) NOT NULL UNIQUE,
+          bank_name VARCHAR(100) NOT NULL,
+          account_number VARCHAR(50) NOT NULL,
+          account_holder_name VARCHAR(150) NOT NULL,
+          swift_code VARCHAR(50) DEFAULT NULL,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+          FOREIGN KEY (hotel_id) REFERENCES hotels(id) ON DELETE CASCADE
+      )`;
+
+// Enable Event Scheduler
+const enableEventSchedulerQuery = `SET GLOBAL event_scheduler = ON;`;
+
+// Drop Delete Expired Bookings Event
+const dropDeleteExpiredBookingsEventQuery = `DROP EVENT IF EXISTS delete_expired_bookings;`;
+
+// Create Delete Expired Bookings Event
+const createDeleteExpiredBookingsEventQuery = `CREATE EVENT delete_expired_bookings
+          ON SCHEDULE EVERY 1 MINUTE
+          STARTS CURRENT_TIMESTAMP
+          ON COMPLETION PRESERVE
+          ENABLE
+          DO
+          DELETE FROM bookings
+          WHERE status = 'pending'
+            AND created_at < NOW() - INTERVAL 1 HOUR;
+       `;
+
 // Export the queries
 const engdaMarefyaDB = {
    usersTableQuery,
@@ -217,6 +256,11 @@ const engdaMarefyaDB = {
    emailLogsTableQuery,
    refreshTokensTableQuery,
    wishlistsTableQuery,
+   bedTypesTableQuery,
+   hotelBankDetailsTableQuery,
+   enableEventSchedulerQuery,
+   dropDeleteExpiredBookingsEventQuery,
+   createDeleteExpiredBookingsEventQuery,
 };
 
 export default engdaMarefyaDB;

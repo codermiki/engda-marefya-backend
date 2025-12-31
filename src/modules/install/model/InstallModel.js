@@ -21,6 +21,15 @@ class InstallModel {
          await connection.query(engdaMarefyaDB.emailLogsTableQuery);
          await connection.query(engdaMarefyaDB.refreshTokensTableQuery);
          await connection.query(engdaMarefyaDB.wishlistsTableQuery);
+         await connection.query(engdaMarefyaDB.bedTypesTableQuery);
+         await connection.query(engdaMarefyaDB.hotelBankDetailsTableQuery);
+         await connection.query(engdaMarefyaDB.enableEventSchedulerQuery);
+         await connection.query(
+            engdaMarefyaDB.dropDeleteExpiredBookingsEventQuery
+         );
+         await connection.query(
+            engdaMarefyaDB.createDeleteExpiredBookingsEventQuery
+         );
          await connection.query(`SET FOREIGN_KEY_CHECKS = 1`);
 
          await connection.commit();
