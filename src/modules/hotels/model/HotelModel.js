@@ -94,7 +94,7 @@ class HotelModel {
          "latitude",
          "longitude",
          "contact_info",
-         "discription",
+         "description",
          "profile_pic_url",
          "profile_pic_public_id",
          "business_license",
