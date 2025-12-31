@@ -6,6 +6,7 @@ const port = Number(process.env.DB_PORT);
 
 let activePool = null;
 let activeHostIndex = 0;
+let host = null;
 
 async function createPool(host) {
    return mysql.createPool({
@@ -23,21 +24,21 @@ async function createPool(host) {
 
 async function connect() {
    for (let i = 0; i < hosts.length; i++) {
-      const host = hosts[activeHostIndex];
+      host = hosts[activeHostIndex];
 
       try {
          const pool = await createPool(host);
          await pool.query("SELECT 1");
-         console.log("Connected to DB:", host);
+         console.log("==> Connected to DB host:", host);
          activePool = pool;
          return;
       } catch (err) {
-         console.error("DB unreachable:", host);
+         console.error("==> DB Host Unreachable:", host);
          activeHostIndex = (activeHostIndex + 1) % hosts.length;
       }
    }
 
-   throw new Error("All database nodes are down");
+   console.error("==> All DB Nodes Unreachable");
 }
 
 /**
@@ -64,3 +65,4 @@ const pool = new Proxy(
 );
 
 export default pool;
+export { host };
