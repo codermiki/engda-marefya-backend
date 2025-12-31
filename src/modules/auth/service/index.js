@@ -101,7 +101,7 @@ export class AuthService {
          }
 
          // Update user's email verification status
-         await UserModel.update(decoded.id, {
+         await UserModel.updateEmailVerificationStatus(decoded.id, {
             is_email_verified: true,
          });
 
@@ -498,7 +498,7 @@ export class AuthService {
          );
 
          // Update user password
-         await UserModel.update(user.id, {
+         await UserModel.updateUserPassword(user.id, {
             password_hash,
          });
 

@@ -164,6 +164,7 @@ router.put(
    requireRole([USER_ROLES.HOTEL_OWNER]),
    requireHotelOwnership([USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN]),
    updateHotelValidation,
+   handleValidationErrors,
    updateHotel
 );
 
@@ -205,6 +206,7 @@ router.put(
    requireRole([USER_ROLES.HOTEL_OWNER]),
    requireRoomTypeOwnership([USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN]),
    updateRoomTypeValidation,
+   handleValidationErrors,
    updateRoomType
 );
 

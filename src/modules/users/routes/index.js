@@ -6,6 +6,7 @@ import {
    requireUserOwnership,
 } from "../../../middlewares/authMiddleware.js";
 import { USER_ROLES } from "../../../constants/user.js";
+import { handleValidationErrors } from "../../../middlewares/validation.js";
 
 const router = Router();
 
@@ -23,6 +24,7 @@ router.put(
    verifyToken,
    requireUserOwnership([USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN]),
    updateUserProfileValidation,
+   handleValidationErrors,
    updateUserProfile
 );
 

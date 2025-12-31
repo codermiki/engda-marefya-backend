@@ -42,8 +42,14 @@ export const registerValidation = [
       ),
 
    body("phone_number")
-      .isMobilePhone()
-      .withMessage("Valid phone number is required"),
+      .optional()
+      .custom((value) => {
+         const ethiopianPhoneRegex = /^(?:\+251|0)?9\d{8}$/;
+         if (!ethiopianPhoneRegex.test(value)) {
+            throw new Error("Enter a valid Ethiopian phone number");
+         }
+         return true;
+      }),
 
    body("role")
       .notEmpty()
@@ -87,23 +93,46 @@ export const createAdminValidation = [
       .withMessage("Invalid role"),
 ];
 
-// Update user profile validation all fields are optional but one field is required to update
-export const updateUserProfileValidation = (req, res, next) => {
-   const updateData = req.body;
-   if (!updateData) {
-      throw new AppError(
-         "At least one field is required",
-         HTTP_STATUS.BAD_REQUEST
-      );
-   }
-   if (Object.keys(updateData).length === 0) {
-      throw new AppError(
-         "At least one field is required",
-         HTTP_STATUS.BAD_REQUEST
-      );
-   }
-   next();
-};
+// Update user profile validation all fields are optional but if they are include in the request body they have to validate
+export const updateUserProfileValidation = [
+   body("first_name")
+      .optional()
+      .isString()
+      .withMessage("First name must be a string")
+      .notEmpty()
+      .withMessage("First name cannot be empty"),
+
+   body("last_name")
+      .optional()
+      .isString()
+      .withMessage("Last name must be a string")
+      .notEmpty()
+      .withMessage("Last name cannot be empty"),
+
+   body("phone_number")
+      .optional()
+      .custom((value) => {
+         const ethiopianPhoneRegex = /^(?:\+251|0)?9\d{8}$/;
+         if (!ethiopianPhoneRegex.test(value)) {
+            throw new Error("Enter a valid Ethiopian phone number");
+         }
+         return true;
+      }),
+
+   body("profile_pic_url")
+      .optional()
+      .isString()
+      .withMessage("Profile pic url must be a string")
+      .notEmpty()
+      .withMessage("Profile pic url cannot be empty"),
+
+   body("profile_pic_id")
+      .optional()
+      .isString()
+      .withMessage("Profile pic id must be a string")
+      .notEmpty()
+      .withMessage("Profile pic id cannot be empty"),
+];
 
 // Login validation
 export const loginValidation = [
@@ -141,23 +170,47 @@ export const createHotelValidation = [
 ];
 
 // Update hotel validation
-// if no field is provided, throw error "At least one field is required"
-export const updateHotelValidation = (req, res, next) => {
-   const updateData = req.body;
-   if (!updateData) {
-      throw new AppError(
-         "At least one field is required",
-         HTTP_STATUS.BAD_REQUEST
-      );
-   }
-   if (Object.keys(updateData).length === 0) {
-      throw new AppError(
-         "At least one field is required",
-         HTTP_STATUS.BAD_REQUEST
-      );
-   }
-   next();
-};
+export const updateHotelValidation = [
+   body("name")
+      .isString()
+      .notEmpty()
+      .optional()
+      .withMessage("Hotel name is required"),
+
+   body("location")
+      .isString()
+      .notEmpty()
+      .optional()
+      .withMessage("Hotel location is required"),
+
+   body("contact_info")
+      .optional()
+      .custom((value) => {
+         const ethiopianPhoneRegex = /^(?:\+251|0)?9\d{8}$/;
+         if (!ethiopianPhoneRegex.test(value)) {
+            throw new Error("Enter a valid Ethiopian phone number");
+         }
+         return true;
+      }),
+
+   body("description")
+      .isString()
+      .notEmpty()
+      .optional()
+      .withMessage("Hotel description is required"),
+
+   body("business_license")
+      .isString()
+      .notEmpty()
+      .optional()
+      .withMessage("Hotel business license is required"),
+
+   body("profile_pic")
+      .isString()
+      .notEmpty()
+      .optional()
+      .withMessage("Hotel profile pic is required"),
+];
 
 // Create room type validation
 export const createRoomTypeValidation = [
@@ -174,23 +227,58 @@ export const createRoomTypeValidation = [
 ];
 
 // Update room type validation
-// if no field is provided, throw error "At least one field is required"
-export const updateRoomTypeValidation = (req, res, next) => {
-   const updateData = req.body;
-   if (!updateData) {
-      throw new AppError(
-         "At least one field is required",
-         HTTP_STATUS.BAD_REQUEST
-      );
-   }
-   if (Object.keys(updateData).length === 0) {
-      throw new AppError(
-         "At least one field is required",
-         HTTP_STATUS.BAD_REQUEST
-      );
-   }
-   next();
-};
+export const updateRoomTypeValidation = [
+   body("name")
+      .optional()
+      .isString()
+      .notEmpty()
+      .withMessage("Room type name is required"),
+
+   body("description")
+      .optional()
+      .isString()
+      .notEmpty()
+      .withMessage("Room type description is required"),
+
+   body("price_per_night")
+      .optional()
+      .isNumeric()
+      .withMessage("Price per night must be a number")
+      .notEmpty()
+      .withMessage("Price per night is required"),
+
+   body("main_image_url")
+      .optional()
+      .isString()
+      .notEmpty()
+      .withMessage("Main image url is required"),
+
+   body("main_image_public_id")
+      .optional()
+      .isString()
+      .notEmpty()
+      .withMessage("Main image public id is required"),
+
+   body("bed_type")
+      .optional()
+      .isString()
+      .withMessage("Bed type must be a string")
+      .notEmpty()
+      .withMessage("Bed type is required"),
+
+   body("number_of_beds")
+      .optional()
+      .isNumeric()
+      .withMessage("Number of beds must be a number")
+      .notEmpty()
+      .withMessage("Number of beds is required"),
+
+   body("status")
+      .optional()
+      .isString()
+      .notEmpty()
+      .withMessage("Status is required"),
+];
 
 // Add amenities to a room type validation
 export const addRoomTypeAmenitiesValidation = [
@@ -221,22 +309,28 @@ export const updateUserStatusValidation = [
 ];
 
 // Update amenity validation all fields are optional but one field is required to update
-export const updateAmenityValidation = (req, res, next) => {
-   const updateData = req.body;
-   if (!updateData) {
-      throw new AppError(
-         "At least one field is required",
-         HTTP_STATUS.BAD_REQUEST
-      );
-   }
-   if (Object.keys(updateData).length === 0) {
-      throw new AppError(
-         "At least one field is required",
-         HTTP_STATUS.BAD_REQUEST
-      );
-   }
-   next();
-};
+export const updateAmenityValidation = [
+   body("name")
+      .optional()
+      .isString()
+      .withMessage("Name must be a string")
+      .notEmpty()
+      .withMessage("Name is required"),
+
+   body("icon_url")
+      .optional()
+      .isString()
+      .withMessage("Icon url must be a string")
+      .notEmpty()
+      .withMessage("Icon url is required"),
+
+   body("icon_public_id")
+      .optional()
+      .isString()
+      .withMessage("Icon public id must be a string")
+      .notEmpty()
+      .withMessage("Icon public id is required"),
+];
 
 // Create booking validation
 export const createBookingValidation = [

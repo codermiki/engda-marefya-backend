@@ -13,14 +13,15 @@ class UserModel {
          phone_number = null,
          password_hash,
          profile_pic_url = null,
+         profile_pic_public_id = null,
          role = "customer",
          status = "active",
          is_email_verified = false,
       } = userData;
 
       const query = `
-      INSERT INTO users (id, first_name, last_name, email, phone_number, password_hash, profile_pic_url, role, status, is_email_verified)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO users (id, first_name, last_name, email, phone_number, password_hash, profile_pic_url, profile_pic_public_id, role, status, is_email_verified)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
 
       const values = [
@@ -31,6 +32,7 @@ class UserModel {
          phone_number,
          password_hash,
          profile_pic_url,
+         profile_pic_public_id,
          role,
          status,
          is_email_verified,
@@ -288,8 +290,8 @@ class UserModel {
       }
    }
 
-   // Update user
-   static async update(id, updateData) {
+   // Update user profile
+   static async updateUserProfile(id, updateData) {
       const allowedFields = [
          "first_name",
          "last_name",
@@ -297,9 +299,6 @@ class UserModel {
          "profile_pic_url",
          "profile_pic_public_id",
          "password_hash",
-         "is_email_verified",
-         "status",
-         "role",
       ];
 
       const setClause = [];
@@ -352,6 +351,189 @@ class UserModel {
       }
    }
 
+   // Update user status
+   static async updateUserStatus(id, updateData) {
+      const allowedFields = ["status"];
+
+      const setClause = [];
+      const values = [];
+
+      allowedFields.forEach((field) => {
+         if (updateData[field] !== undefined) {
+            setClause.push(`${field} = ?`);
+            values.push(updateData[field]);
+         }
+      });
+
+      if (setClause.length === 0) {
+         throw new AppError(
+            "No valid fields to update",
+            HTTP_STATUS.BAD_REQUEST
+         );
+      }
+
+      setClause.push("updated_at = CURRENT_TIMESTAMP");
+      values.push(id);
+
+      const query = `UPDATE users SET ${setClause.join(", ")} WHERE id = ?`;
+
+      try {
+         const [result] = await pool.execute(query, values);
+
+         if (result.affectedRows === 0) {
+            return null;
+         }
+
+         // Return updated user data
+         return {
+            id,
+            ...updateData,
+         };
+      } catch (error) {
+         throw new AppError(
+            "Internal server error",
+            HTTP_STATUS.INTERNAL_SERVER_ERROR
+         );
+      }
+   }
+
+   // Update user role
+   static async updateUserRole(id, updateData) {
+      const allowedFields = ["role"];
+
+      const setClause = [];
+      const values = [];
+
+      allowedFields.forEach((field) => {
+         if (updateData[field] !== undefined) {
+            setClause.push(`${field} = ?`);
+            values.push(updateData[field]);
+         }
+      });
+
+      if (setClause.length === 0) {
+         throw new AppError(
+            "No valid fields to update",
+            HTTP_STATUS.BAD_REQUEST
+         );
+      }
+
+      setClause.push("updated_at = CURRENT_TIMESTAMP");
+      values.push(id);
+
+      const query = `UPDATE users SET ${setClause.join(", ")} WHERE id = ?`;
+
+      try {
+         const [result] = await pool.execute(query, values);
+
+         if (result.affectedRows === 0) {
+            return null;
+         }
+
+         // Return updated user data
+         return {
+            id,
+            ...updateData,
+         };
+      } catch (error) {
+         throw new AppError(
+            "Internal server error",
+            HTTP_STATUS.INTERNAL_SERVER_ERROR
+         );
+      }
+   }
+
+   // Update user email verification status
+   static async updateEmailVerificationStatus(id, updateData) {
+      const allowedFields = ["is_email_verified"];
+
+      const setClause = [];
+      const values = [];
+
+      allowedFields.forEach((field) => {
+         if (updateData[field] !== undefined) {
+            setClause.push(`${field} = ?`);
+            values.push(updateData[field]);
+         }
+      });
+
+      if (setClause.length === 0) {
+         throw new AppError(
+            "No valid fields to update",
+            HTTP_STATUS.BAD_REQUEST
+         );
+      }
+
+      setClause.push("updated_at = CURRENT_TIMESTAMP");
+      values.push(id);
+
+      const query = `UPDATE users SET ${setClause.join(", ")} WHERE id = ?`;
+
+      try {
+         const [result] = await pool.execute(query, values);
+
+         if (result.affectedRows === 0) {
+            return null;
+         }
+
+         // Return updated user data
+         return {
+            id,
+            ...updateData,
+         };
+      } catch (error) {
+         throw new AppError(
+            "Internal server error",
+            HTTP_STATUS.INTERNAL_SERVER_ERROR
+         );
+      }
+   }
+
+   // Update user password
+   static async updateUserPassword(id, updateData) {
+      const allowedFields = ["password_hash"];
+
+      const setClause = [];
+      const values = [];
+
+      allowedFields.forEach((field) => {
+         if (updateData[field] !== undefined) {
+            setClause.push(`${field} = ?`);
+            values.push(updateData[field]);
+         }
+      });
+
+      if (setClause.length === 0) {
+         throw new AppError(
+            "No valid fields to update",
+            HTTP_STATUS.BAD_REQUEST
+         );
+      }
+
+      setClause.push("updated_at = CURRENT_TIMESTAMP");
+      values.push(id);
+
+      const query = `UPDATE users SET ${setClause.join(", ")} WHERE id = ?`;
+
+      try {
+         const [result] = await pool.execute(query, values);
+
+         if (result.affectedRows === 0) {
+            return null;
+         }
+
+         // Return updated user data
+         return {
+            id,
+            ...updateData,
+         };
+      } catch (error) {
+         throw new AppError(
+            "Internal server error",
+            HTTP_STATUS.INTERNAL_SERVER_ERROR
+         );
+      }
+   }
    // Remove user
    static async remove(id) {
       const query = "DELETE FROM users WHERE id = ?";

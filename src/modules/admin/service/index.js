@@ -165,7 +165,7 @@ export class AdminService {
          if (!user) {
             throw new AppError("User not found", HTTP_STATUS.NOT_FOUND);
          }
-         const updatedUser = await UserModel.update(id, { status });
+         const updatedUser = await UserModel.updateUserStatus(id, { status });
          if (!updatedUser) {
             throw new AppError(
                "Failed to update user status",
@@ -194,7 +194,7 @@ export class AdminService {
          if (!user) {
             throw new AppError("User not found", HTTP_STATUS.NOT_FOUND);
          }
-         const updatedUser = await UserModel.update(id, { role });
+         const updatedUser = await UserModel.updateUserRole(id, { role });
          if (!updatedUser) {
             throw new AppError(
                "Failed to update user role",

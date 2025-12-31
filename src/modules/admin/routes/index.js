@@ -85,6 +85,7 @@ router.put(
    verifyToken,
    requireRole([USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN]),
    updateAmenityValidation,
+   handleValidationErrors,
    updateAmenity
 );
 // Remove amenity

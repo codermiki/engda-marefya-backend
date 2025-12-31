@@ -952,7 +952,7 @@ class HotelModel {
 
    // Update amenities
    static async updateAmenity(id, updateData) {
-      const allowedFields = ["name", "icon_url"];
+      const allowedFields = ["name", "icon_url", "icon_public_id"];
 
       const setClause = [];
       const values = [];

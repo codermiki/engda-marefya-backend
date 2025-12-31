@@ -53,7 +53,7 @@ export class UserService {
                await cloudinary.uploader.destroy(user?.profile_pic_public_id);
             }
          }
-         const updatedUser = await UserModel.update(id, userData);
+         const updatedUser = await UserModel.updateUserProfile(id, userData);
          if (!updatedUser) {
             throw new AppError(
                "Failed to update user profile",
