@@ -222,6 +222,7 @@ export class HotelService {
             description: roomType.description,
             price_per_night: roomType.price_per_night,
             main_image_url: roomType.main_image_url,
+            main_image_public_id: roomType.main_image_public_id,
             status: roomType.status,
             bed_type: roomType.bed_type,
             number_of_beds: roomType.number_of_beds,

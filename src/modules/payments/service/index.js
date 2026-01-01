@@ -35,8 +35,8 @@ export class PaymentService {
          first_name: booking.user.first_name,
          last_name: booking.user.last_name,
          tx_ref: booking.booking_reference,
-         return_url: "https://google.com/",
-         callback_url: "https://google.com/",
+         return_url: "http://192.168.137.53:3000/customer/bookings",
+         callback_url: "http://192.168.137.53:3000/customer/bookings",
       };
 
       // initiate chapa payment

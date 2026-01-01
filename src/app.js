@@ -39,7 +39,12 @@ app.set("trust proxy", 1); // Enable "trust proxy" if using Nginx or reverse pro
 app.use(requestLogger);
 
 // ====== Global Rate Limiter ======
-app.use(rateLimiter());
+app.use(
+   rateLimiter({
+      windowMs: 1 * 60 * 1000, // 1 minutes
+      max: 100, // limit each IP to 100 requests per windowMs
+   })
+);
 
 // ====== System installation ======
 app.use("/api/v1/install", installRoutes);

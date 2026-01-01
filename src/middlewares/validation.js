@@ -222,6 +222,11 @@ export const createRoomTypeValidation = [
       .notEmpty()
       .withMessage("Price per night is required"),
    body("main_image_url").notEmpty().withMessage("Main image url is required"),
+   body("main_image_public_id")
+      .optional()
+      .isString()
+      .notEmpty()
+      .withMessage("Main image public id is required"),
    body("bed_type").notEmpty().withMessage("Bed type is required"),
    body("number_of_beds").notEmpty().withMessage("Number of beds is required"),
 ];

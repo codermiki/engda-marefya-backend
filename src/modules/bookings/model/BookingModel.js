@@ -71,6 +71,8 @@ class BookingModel {
             rt.bed_type,
             rt.number_of_beds,
             rt.description AS room_type_description,
+            rt.main_image_url AS room_type_main_image_url,
+            rt.main_image_public_id AS room_type_main_image_public_id,
 
             h.id AS hotel_id,
             h.name AS hotel_name,
@@ -157,6 +159,8 @@ class BookingModel {
                   description: booking.room_type_description,
                   reviews_count: booking.room_type_reviews_count,
                   average_rating: booking.room_type_average_rating,
+                  main_image_url: booking.room_type_main_image_url,
+                  main_image_public_id: booking.room_type_main_image_public_id,
                },
             },
             hotel: {

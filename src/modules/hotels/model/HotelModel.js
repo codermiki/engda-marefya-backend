@@ -210,6 +210,7 @@ class HotelModel {
             rt.description,
             rt.price_per_night,
             rt.main_image_url,
+            rt.main_image_public_id,
             rt.status,
             rt.bed_type,
             rt.number_of_beds,
