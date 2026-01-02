@@ -23,13 +23,17 @@ export const registerValidation = [
       .notEmpty()
       .withMessage("First name is required")
       .isLength({ min: 2, max: 100 })
-      .withMessage("First name must be between 2 and 100 characters"),
+      .withMessage("First name must be between 2 and 100 characters")
+      .matches(/^[A-Za-z\u1200-\u137F]+([ '-][A-Za-z\u1200-\u137F]+)*$/)
+      .withMessage("First name contains invalid characters"),
 
    body("last_name")
       .notEmpty()
       .withMessage("Last name is required")
       .isLength({ min: 2, max: 100 })
-      .withMessage("Last name must be between 2 and 100 characters"),
+      .withMessage("Last name must be between 2 and 100 characters")
+      .matches(/^[A-Za-z\u1200-\u137F]+([ '-][A-Za-z\u1200-\u137F]+)*$/)
+      .withMessage("Last name contains invalid characters"),
 
    body("email").isEmail().withMessage("Valid email is required"),
 
@@ -64,13 +68,17 @@ export const createAdminValidation = [
       .notEmpty()
       .withMessage("First name is required")
       .isLength({ min: 2, max: 100 })
-      .withMessage("First name must be between 2 and 100 characters"),
+      .withMessage("First name must be between 2 and 100 characters")
+      .matches(/^[A-Za-z\u1200-\u137F]+([ '-][A-Za-z\u1200-\u137F]+)*$/)
+      .withMessage("First name contains invalid characters"),
 
    body("last_name")
       .notEmpty()
       .withMessage("Last name is required")
       .isLength({ min: 2, max: 100 })
-      .withMessage("Last name must be between 2 and 100 characters"),
+      .withMessage("Last name must be between 2 and 100 characters")
+      .matches(/^[A-Za-z\u1200-\u137F]+([ '-][A-Za-z\u1200-\u137F]+)*$/)
+      .withMessage("Last name contains invalid characters"),
 
    body("email").isEmail().withMessage("Valid email is required"),
 
@@ -82,9 +90,13 @@ export const createAdminValidation = [
          "Password must contain at least one lowercase letter, one uppercase letter, and one number"
       ),
 
-   body("phone_number")
-      .isMobilePhone()
-      .withMessage("Valid phone number is required"),
+   body("phone_number").custom((value) => {
+      const ethiopianPhoneRegex = /^(?:\+251|0)?9\d{8}$/;
+      if (!ethiopianPhoneRegex.test(value)) {
+         throw new Error("Enter a valid Ethiopian phone number");
+      }
+      return true;
+   }),
 
    body("role")
       .notEmpty()
@@ -97,15 +109,15 @@ export const createAdminValidation = [
 export const updateUserProfileValidation = [
    body("first_name")
       .optional()
-      .isString()
-      .withMessage("First name must be a string")
+      .matches(/^[A-Za-z\u1200-\u137F]+([ '-][A-Za-z\u1200-\u137F]+)*$/)
+      .withMessage("First name contains invalid characters")
       .notEmpty()
       .withMessage("First name cannot be empty"),
 
    body("last_name")
       .optional()
-      .isString()
-      .withMessage("Last name must be a string")
+      .matches(/^[A-Za-z\u1200-\u137F]+([ '-][A-Za-z\u1200-\u137F]+)*$/)
+      .withMessage("Last name contains invalid characters")
       .notEmpty()
       .withMessage("Last name cannot be empty"),
 
