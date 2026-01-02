@@ -8,6 +8,7 @@ import PaymentModel from "../model/PaymentModel.js";
 export class PaymentService {
    // Create payment service
    static async createPayment(booking_id) {
+      const frontendUrl = process.env.FRONTEND_URL;
       // Get booking details
       const booking = await BookingModel.getBookingDetails(booking_id);
 
@@ -35,8 +36,8 @@ export class PaymentService {
          first_name: booking.user.first_name,
          last_name: booking.user.last_name,
          tx_ref: booking.booking_reference,
-         return_url: "http://192.168.137.53:3000/customer/bookings",
-         callback_url: "http://192.168.137.53:3000/customer/bookings",
+         return_url: `${frontendUrl}/customer/bookings`,
+         callback_url: `${frontendUrl}/customer/bookings`,
       };
 
       // initiate chapa payment
