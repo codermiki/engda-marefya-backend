@@ -13,7 +13,7 @@ export const createHotel = async (req, res, next) => {
          longitude,
          contact_info,
          description,
-         business_license_url,
+         business_license,
          business_license_public_id,
          profile_pic_url,
          profile_pic_public_id,
@@ -26,7 +26,7 @@ export const createHotel = async (req, res, next) => {
          !longitude ||
          !contact_info ||
          !description ||
-         !business_license_url ||
+         !business_license ||
          !profile_pic_url ||
          !business_license_public_id ||
          !profile_pic_public_id
@@ -47,7 +47,7 @@ export const createHotel = async (req, res, next) => {
          longitude,
          contact_info,
          description,
-         business_license_url,
+         business_license,
          business_license_public_id,
          profile_pic_url,
          profile_pic_public_id,

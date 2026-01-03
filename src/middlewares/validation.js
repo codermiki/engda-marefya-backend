@@ -169,16 +169,28 @@ export const resetPassValidation = [
 export const createHotelValidation = [
    body("name").notEmpty().withMessage("Hotel name is required"),
    body("location").notEmpty().withMessage("Hotel location is required"),
-   body("contact_info")
-      .notEmpty()
-      .withMessage("Hotel contact info is required"),
+   body("contact_info").custom((value) => {
+      const ethiopianPhoneRegex = /^(?:\+251|0)?9\d{8}$/;
+      if (!ethiopianPhoneRegex.test(value)) {
+         throw new Error("Enter a valid Ethiopian phone number");
+      }
+      return true;
+   }),
    body("description").notEmpty().withMessage("Hotel description is required"),
-   body("business_license_url")
+   body("latitude").notEmpty().withMessage("Hotel latitude is required"),
+   body("longitude").notEmpty().withMessage("Hotel longitude is required"),
+   body("business_license")
+      .notEmpty()
+      .withMessage("Hotel business license is required"),
+   body("business_license_public_id")
       .notEmpty()
       .withMessage("Hotel business license is required"),
    body("profile_pic_url")
       .notEmpty()
       .withMessage("Hotel profile pic url is required"),
+   body("profile_pic_public_id")
+      .notEmpty()
+      .withMessage("Hotel profile pic public id is required"),
 ];
 
 // Update hotel validation
@@ -194,6 +206,10 @@ export const updateHotelValidation = [
       .notEmpty()
       .optional()
       .withMessage("Hotel location is required"),
+
+   body("latitude").notEmpty().withMessage("Hotel latitude is required"),
+
+   body("longitude").notEmpty().withMessage("Hotel longitude is required"),
 
    body("contact_info")
       .optional()
@@ -217,11 +233,23 @@ export const updateHotelValidation = [
       .optional()
       .withMessage("Hotel business license is required"),
 
+   body("business_license_public_id")
+      .isString()
+      .notEmpty()
+      .optional()
+      .withMessage("Hotel business license is required"),
+
    body("profile_pic")
       .isString()
       .notEmpty()
       .optional()
       .withMessage("Hotel profile pic is required"),
+
+   body("profile_pic_public_id")
+      .isString()
+      .notEmpty()
+      .optional()
+      .withMessage("Hotel profile pic public id is required"),
 ];
 
 // Create room type validation
