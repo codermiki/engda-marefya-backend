@@ -224,22 +224,22 @@ const hotelBankDetailsTableQuery = `CREATE TABLE IF NOT EXISTS hotel_bank_detail
       )`;
 
 // Enable Event Scheduler
-const enableEventSchedulerQuery = `SET GLOBAL event_scheduler = ON;`;
+// const enableEventSchedulerQuery = `SET GLOBAL event_scheduler = ON;`;
 
 // Drop Delete Expired Bookings Event
-const dropDeleteExpiredBookingsEventQuery = `DROP EVENT IF EXISTS delete_expired_bookings;`;
+// const dropDeleteExpiredBookingsEventQuery = `DROP EVENT IF EXISTS delete_expired_bookings;`;
 
 // Create Delete Expired Bookings Event
-const createDeleteExpiredBookingsEventQuery = `CREATE EVENT delete_expired_bookings
-          ON SCHEDULE EVERY 1 MINUTE
-          STARTS CURRENT_TIMESTAMP
-          ON COMPLETION PRESERVE
-          ENABLE
-          DO
-          DELETE FROM bookings
-          WHERE status = 'pending'
-            AND created_at < NOW() - INTERVAL 1 HOUR;
-       `;
+// const createDeleteExpiredBookingsEventQuery = `CREATE EVENT delete_expired_bookings
+//           ON SCHEDULE EVERY 1 MINUTE
+//           STARTS CURRENT_TIMESTAMP
+//           ON COMPLETION PRESERVE
+//           ENABLE
+//           DO
+//           DELETE FROM bookings
+//           WHERE status = 'pending'
+//             AND created_at < NOW() - INTERVAL 1 HOUR;
+//        `;
 
 // Export the queries
 const engdaMarefyaDB = {
@@ -258,9 +258,9 @@ const engdaMarefyaDB = {
    wishlistsTableQuery,
    bedTypesTableQuery,
    hotelBankDetailsTableQuery,
-   enableEventSchedulerQuery,
-   dropDeleteExpiredBookingsEventQuery,
-   createDeleteExpiredBookingsEventQuery,
+   //    enableEventSchedulerQuery,
+   //    dropDeleteExpiredBookingsEventQuery,
+   //    createDeleteExpiredBookingsEventQuery,
 };
 
 export default engdaMarefyaDB;
