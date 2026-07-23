@@ -45,10 +45,13 @@ class EmailService {
             console.log("==> Email transporter is ready to send messages");
          }
       } catch (error) {
-         console.error(
-            "==> Email transporter verification failed:",
-            error.message
-         );
+         console.error("==> Email transporter verification failed:", {
+            message: error?.message,
+            stack: error?.stack,
+            response: error?.response,
+            code: error?.code,
+            command: error?.command,
+         });
       }
    }
 
@@ -63,7 +66,7 @@ class EmailService {
          if (!this.transporter) {
             throw new AppError(
                "Email service is not Working, Please try again later",
-               HTTP_STATUS.INTERNAL_SERVER_ERROR
+               HTTP_STATUS.INTERNAL_SERVER_ERROR,
             );
          }
 
@@ -97,7 +100,13 @@ class EmailService {
             await EmailLogModel.updateStatus(emailLogId, "failed");
          }
 
-         console.error("Failed to send email:", error);
+         console.error("Failed to send email:", {
+            message: error?.message,
+            stack: error?.stack,
+            response: error?.response,
+            code: error?.code,
+            command: error?.command,
+         });
 
          return null;
       }
@@ -219,7 +228,7 @@ class EmailService {
             subject: "Hotel Rejected - Engda Marefya",
             html: this.getHotelRejectedEmailTemplate(
                hotelName,
-               rejectionReason
+               rejectionReason,
             ),
          };
 
