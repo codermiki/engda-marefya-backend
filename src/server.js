@@ -1,7 +1,6 @@
 import "dotenv/config";
 import pool from "./config/db.js";
 import { getAllLocalIPs } from "./utils/network.js";
-import ngrok from "@ngrok/ngrok";
 
 // Import the configured Express app
 import app from "./app.js";
@@ -27,14 +26,24 @@ app.listen(PORT, "0.0.0.0", (error) => {
    if (!error) {
       for (const ipInfo of hosts) {
          console.log(
-            `==> ${SERVER_NAME} is running at http://${ipInfo.address}:${PORT} (interface: ${ipInfo.interface})`
+            `==> ${SERVER_NAME} is running at http://${ipInfo.address}:${PORT} (interface: ${ipInfo.interface})`,
          );
       }
    }
 });
 
-// ====== Start ngrok ======
-ngrok
-   .connect({ addr: PORT, authtoken_from_env: true })
-   .then((listener) => console.log(`==> Live at: ${listener.url()}`))
-   .catch((error) => console.error("==> ngrok connection failed:", error));
+// ====== Start ngrok only in development ======
+if (process.env.NODE_ENV !== "production") {
+   try {
+      const ngrok = await import("@ngrok/ngrok");
+
+      ngrok
+         .connect({ addr: PORT, authtoken_from_env: true })
+         .then((listener) => console.log(`==> Live at: ${listener.url()}`))
+         .catch((error) =>
+            console.error("==> ngrok connection failed:", error),
+         );
+   } catch (error) {
+      console.error("==> Failed to load ngrok:", error.message);
+   }
+}
