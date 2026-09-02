@@ -1,4 +1,4 @@
-import nodemailer from "nodemailer";
+import { BrevoClient } from "@getbrevo/brevo";
 import { generateId } from "./idGenerator.js";
 import EmailLogModel from "../modules/auth/model/EmailLogModel.js";
 import AppError from "./AppError.js";
@@ -10,60 +10,30 @@ import { HTTP_STATUS } from "../constants/http.js";
  */
 class EmailService {
    constructor() {
-      this.transporter = null;
-      this.initializeTransporter();
-   }
+      const apiKey = process.env.BREVO_API_KEY;
 
-   initializeTransporter() {
-      try {
-         // Gmail SMTP configuration
-         this.transporter = nodemailer.createTransport({
-            host: process.env.SMTP_HOST || "smtp.gmail.com",
-            port: parseInt(process.env.SMTP_PORT) || 587,
-            secure: process.env.SMTP_SECURE === "true",
-            auth: {
-               user: process.env.SMTP_USER,
-               pass: process.env.SMTP_PASS,
-            },
-            // Gmail specific settings
-            tls: {
-               rejectUnauthorized: false,
-            },
-         });
-
-         // Verify transporter configuration
-         this.verifyTransporter();
-      } catch (error) {
-         console.error("Failed to initialize email transporter:", error);
+      if (!apiKey) {
+         console.warn("⚠️ BREVO_API_KEY is not set in environment variables");
       }
-   }
 
-   async verifyTransporter() {
-      try {
-         if (this.transporter) {
-            await this.transporter.verify();
-            console.log("==> Email transporter is ready to send messages");
-         }
-      } catch (error) {
-         console.error("==> Email transporter verification failed:", {
-            message: error?.message,
-            stack: error?.stack,
-            response: error?.response,
-            code: error?.code,
-            command: error?.command,
-         });
-      }
+      // Initialise Brevo Client according to @getbrevo/brevo v6 documentation
+      this.client = new BrevoClient({
+         apiKey: apiKey || "",
+      });
+
+      console.log("==> Brevo email service initialised");
    }
 
    /**
     * Send email with logging
+    * Accepts mailOptions: { to, subject, html, text, from }
     */
    async sendEmail(mailOptions, emailType = "other") {
       let emailLogId = null;
 
       try {
-         // Validate transporter
-         if (!this.transporter) {
+         // Validate client
+         if (!this.client) {
             throw new AppError(
                "Email service is not Working, Please try again later",
                HTTP_STATUS.INTERNAL_SERVER_ERROR,
@@ -81,14 +51,31 @@ class EmailService {
             status: "pending",
          });
 
-         // Set default from address
-         if (!mailOptions.from) {
-            mailOptions.from =
-               process.env.EMAIL_FROM || "noreply@engda-marefya.com";
+         // Resolve sender address
+         const fromAddress =
+            mailOptions.from ||
+            process.env.EMAIL_FROM ||
+            "noreply@engda-marefya.com";
+
+         // Build Brevo payload according to SDK documentation
+         const sendPayload = {
+            sender: {
+               email: fromAddress,
+               name: "Engda Marefya",
+            },
+            to: [{ email: mailOptions.to }],
+            subject: mailOptions.subject,
+         };
+
+         if (mailOptions.html) {
+            sendPayload.htmlContent = mailOptions.html;
+         } else if (mailOptions.text) {
+            sendPayload.textContent = mailOptions.text;
          }
 
-         // Send email
-         const result = await this.transporter.sendMail(mailOptions);
+         // Send transactional email using v6 SDK
+         const result =
+            await this.client.transactionalEmails.sendTransacEmail(sendPayload);
 
          // Update email log to sent
          await EmailLogModel.updateStatus(emailLogId, "sent");
