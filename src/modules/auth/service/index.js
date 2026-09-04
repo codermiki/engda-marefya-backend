@@ -380,7 +380,7 @@ export class AuthService {
          if (!user.is_email_verified) {
             const token = JWTUtils.createToken(
                {
-                  userId: user.id,
+                  id: user.id,
                   email: user.email,
                   type: "email_verification",
                },
